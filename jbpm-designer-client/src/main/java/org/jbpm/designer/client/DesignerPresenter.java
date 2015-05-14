@@ -236,6 +236,8 @@ public class DesignerPresenter
     public void showDataIOEditor(final String datainput, final String datainputset, final String dataoutput,
             final String dataoutputset, final String processvars, final String assignments, final String datatypes, final JavaScriptObject jscallback) {
         //Window.alert("DesignerPresenter.showDataIOEditor param assignmentdata = " + assignmentData);
+
+        //getDataIOEditorData("{ \"a\":\"hello\" }", jscallback);
         final DesignerPresenter dp = this;
         activityDataIOEditor.setCallback(
                 new ActivityDataIOEditor.GetDataCallback() {

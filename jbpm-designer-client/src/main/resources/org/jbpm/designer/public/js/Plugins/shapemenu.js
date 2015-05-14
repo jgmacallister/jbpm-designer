@@ -445,20 +445,19 @@ ORYX.Plugins.ShapeMenuPlugin = {
 		window.alert(s);
 		//var assignmentData = {'datainput':datainput, 'datainputset':datainputset, 'dataoutput':dataoutput, 'dataoutputset':dataoutputset,
 		// 'datatypes':datatypes, 'assignments':assignments};
-		parent.designersignalshowdataioeditor(datainput, datainputset, dataoutput, dataoutputset, processvars, assignments, datatypes, this.getDataIOEditorData);
-	},
+		parent.designersignalshowdataioeditor(datainput, datainputset, dataoutput, dataoutputset, processvars, assignments, datatypes,
+				function(data) {
+					window.alert("passed back to shapemenu: " + data);
+					var obj = JSON.parse(data);
 
-	getDataIOEditorData: function(data) {
-		window.alert("passed back to shapemenu: " + data);
-		var obj = JSON.parse(data);
+					var element = this.currentShapes[0];
+					var stencil = element.getStencil();
 
-		var element = this.currentShapes[0];
-		var stencil = element.getStencil();
-
-		element.setProperty('oryx-datainputset', obj['inputVariables']);
-		element.setProperty('oryx-dataoutputset', obj['outputVariables']);
-		element.setProperty('oryx-assignments', obj['assignments']);
-
+					element.setProperty('oryx-datainputset', obj['inputVariables']);
+					element.setProperty('oryx-dataoutputset', obj['outputVariables']);
+					element.setProperty('oryx-assignments', obj['assignments']);
+				}.bind(this)
+		);
 	},
 
 	onSelectionChanged: function(event) {

@@ -164,7 +164,6 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     @EventHandler("deleteButton")
     public void handleDeleteButton(ClickEvent e) {
-        Window.alert("About to delete from list");
         assignments.remove(assignment.getModel());
     }
 
