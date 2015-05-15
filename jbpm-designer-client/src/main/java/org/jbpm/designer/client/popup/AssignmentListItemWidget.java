@@ -5,6 +5,8 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import com.github.gwtbootstrap.client.ui.Icon;
+import com.github.gwtbootstrap.client.ui.constants.IconType;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
@@ -173,10 +175,10 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
      */
     private void updateAssignmentStyle() {
         if (assignment.getModel().getVariableType() == VariableType.INPUT) {
-            direction.appendChild(new Label("<-----").getElement());
+            direction.appendChild(new Icon(IconType.ARROW_LEFT).getElement());
         }
         else {
-            direction.appendChild(new Label("----->").getElement());
+            direction.appendChild(new Icon(IconType.ARROW_RIGHT).getElement());
             constant.setVisible(false);
         }
     /*
