@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import com.github.gwtbootstrap.client.ui.Button;
 import com.github.gwtbootstrap.client.ui.Icon;
 import com.github.gwtbootstrap.client.ui.constants.IconType;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -16,7 +17,6 @@ import com.google.gwt.text.shared.Renderer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
@@ -174,6 +174,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
      * corresponding {@link AssignmentRow}.
      */
     private void updateAssignmentStyle() {
+        deleteButton.setIcon(IconType.REMOVE);
+
         if (assignment.getModel().getVariableType() == VariableType.INPUT) {
             direction.appendChild(new Icon(IconType.ARROW_LEFT).getElement());
         }
