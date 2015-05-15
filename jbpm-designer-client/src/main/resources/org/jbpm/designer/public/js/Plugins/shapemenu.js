@@ -442,22 +442,83 @@ ORYX.Plugins.ShapeMenuPlugin = {
 				"dataoutputset = " + dataoutputset + "\n" +
 				"processvars = " + processvars + "\n" +
 				"datatypes = " + datatypes;
-		window.alert(s);
+//		window.alert(s);
 		//var assignmentData = {'datainput':datainput, 'datainputset':datainputset, 'dataoutput':dataoutput, 'dataoutputset':dataoutputset,
 		// 'datatypes':datatypes, 'assignments':assignments};
 		parent.designersignalshowdataioeditor(datainput, datainputset, dataoutput, dataoutputset, processvars, assignments, datatypes,
 				function(data) {
-					window.alert("passed back to shapemenu: " + data);
+//					window.alert("passed back to shapemenu: " + data);
 					var obj = JSON.parse(data);
 
 					var element = this.currentShapes[0];
 					var stencil = element.getStencil();
 
-					element.setProperty('oryx-datainputset', obj['inputVariables']);
-					element.setProperty('oryx-dataoutputset', obj['outputVariables']);
-					element.setProperty('oryx-assignments', obj['assignments']);
+					//element.setProperty('oryx-datainputset', obj['inputVariables']);
+					//element.setProperty('oryx-dataoutputset', obj['outputVariables']);
+					//element.setProperty('oryx-assignments', obj['assignments']);
+					var newProperties = new Hash();
+					newProperties['oryx-datainputset'] = obj['inputVariables'];
+					newProperties['oryx-dataoutputset'] = obj['outputVariables'];
+					newProperties['oryx-assignments'] = obj['assignments'];
+					var oldProperties = new Hash();
+					oldProperties['oryx-datainputset'] = element.properties['oryx-datainputset'];
+					oldProperties['oryx-dataoutputset'] = element.properties['oryx-dataoutputset'];
+					oldProperties['oryx-assignments'] = element.properties['oryx-assignments'];
+
+					this.setElementProperties(element, newProperties, oldProperties);
+
 				}.bind(this)
 		);
+	},
+
+	setElementProperties: function(element, newProperties, oldProperties) {
+
+		var facade		= this.facade;
+
+		// Implement the specific command for property change
+		var commandClass = ORYX.Core.Command.extend({
+			construct: function(){
+				this.newProperties 	= newProperties;
+				this.oldProperties = oldProperties;
+				this.selectedElements = [element];
+				this.facade		= facade;
+			},
+			execute: function(){
+				this.newProperties.each(function(pair){
+					if(!element.getStencil().property(pair.key).readonly()) {
+						element.setProperty(pair.key, pair.value);
+					}
+				}.bind(this));
+				this.facade.setSelection(this.selectedElements);
+				this.facade.getCanvas().update();
+				this.facade.updateSelection();
+			},
+			rollback: function(){
+				this.oldProperties.each(function(pair){
+					if(!element.getStencil().property(pair.key).readonly()) {
+						element.setProperty(pair.key, pair.value);
+					}
+				}.bind(this));
+				this.facade.setSelection(this.selectedElements);
+				this.facade.getCanvas().update();
+				this.facade.updateSelection();
+			}
+		})
+		// Instantiate the class
+		var command = new commandClass();
+
+		// Execute the command
+		this.facade.executeCommands([command]);
+
+		newProperties.each(function(pair){
+			this.facade.raiseEvent({
+				type 		: ORYX.CONFIG.EVENT_PROPWINDOW_PROP_CHANGED,
+				elements	: [element],
+				key			: pair.key,
+				value		: pair.value
+			});
+		}.bind(this));
+
 	},
 
 	onSelectionChanged: function(event) {
