@@ -389,6 +389,84 @@ ORYX.Plugins.ShapeMenuPlugin = {
 	},
 
 	showDataIOEditor: function() {
+		this.getDataTypesForDataIOEditor()
+	},
+
+	getDataTypesForDataIOEditor: function() {
+		var processJSON = ORYX.EDITOR.getSerializedJSON();
+		var processPackage = jsonPath(processJSON.evalJSON(), "$.properties.package");
+		var processId = jsonPath(processJSON.evalJSON(), "$.properties.id");
+		Ext.Ajax.request({
+			url: ORYX.PATH + 'calledelement',
+			method: 'POST',
+			success: function(response) {
+				try {
+					if(response.responseText.length >= 0 && response.responseText != "false") {
+						var responseJson = Ext.decode(response.responseText);
+						this.doShowDataIOEditor(responseJson);
+					} else {
+						this.facade.raiseEvent({
+							type 		: ORYX.CONFIG.EVENT_NOTIFICATION_SHOW,
+							ntype		: 'error',
+							msg         : 'Unable to find Data Types.',
+							title       : ''
+
+						});
+					}
+				} catch(e) {
+					this.facade.raiseEvent({
+						type 		: ORYX.CONFIG.EVENT_NOTIFICATION_SHOW,
+						ntype		: 'error',
+						msg         : 'Error retrieving Data Types info '+' :\n' + e,
+						title       : ''
+
+					});
+				}
+			}.bind(this),
+			failure: function(){
+				this.facade.raiseEvent({
+					type 		: ORYX.CONFIG.EVENT_NOTIFICATION_SHOW,
+					ntype		: 'error',
+					msg         : 'Error retrieving Data Types info.',
+					title       : ''
+
+				});
+			},
+			params: {
+				profile: ORYX.PROFILE,
+				uuid : ORYX.UUID,
+				ppackage: processPackage,
+				pid: processId,
+				action: 'showdatatypes'
+			}
+		});
+	},
+
+	doShowDataIOEditor: function(dataTypesJson) {
+		var javaDataTypes = "";
+		var unsortedData= new Array();
+		for(var key in dataTypesJson){
+			var keyVal = dataTypesJson[key];
+			unsortedData.push(keyVal);
+		}
+		unsortedData.sort();
+
+		for(var t = 0 ; t < unsortedData.length; t++ ) {
+			var presStr = unsortedData[t];
+			var presStrParts = presStr.split(".");
+
+			var classPart = presStrParts[presStrParts.length-1];
+			var pathPart = presStr.substring(0, presStr.length - (classPart.length + 1));
+
+			var newType = classPart + " [" + pathPart + "]:" + presStr;
+			javaDataTypes = javaDataTypes + newType;
+			if (t < unsortedData.length - 1) {
+				javaDataTypes = javaDataTypes + ",";
+			}
+		}
+
+		var datatypes = "String:String, Integer:Integer, Boolean:Boolean, Float:Float, Object:Object, ******:******," + javaDataTypes;
+
 		var element = this.currentShapes[0];
 		var stencil = element.getStencil();
 		var assignments = undefined;
@@ -431,23 +509,9 @@ ORYX.Plugins.ShapeMenuPlugin = {
 				}
 			});
 		}
-
-
-		var datatypes = "String:String, Integer:Integer, Boolean:Boolean, Float:Float, Object:Object";
-
-		s = "assignments = " + assignments + "\n" +
-				"datainput = " + datainput + "\n" +
-				"datainputset = " + datainputset + "\n" +
-				"dataoutput = " + dataoutput + "\n" +
-				"dataoutputset = " + dataoutputset + "\n" +
-				"processvars = " + processvars + "\n" +
-				"datatypes = " + datatypes;
-//		window.alert(s);
-		//var assignmentData = {'datainput':datainput, 'datainputset':datainputset, 'dataoutput':dataoutput, 'dataoutputset':dataoutputset,
-		// 'datatypes':datatypes, 'assignments':assignments};
 		parent.designersignalshowdataioeditor(datainput, datainputset, dataoutput, dataoutputset, processvars, assignments, datatypes,
 				function(data) {
-//					window.alert("passed back to shapemenu: " + data);
+					//					window.alert("passed back to shapemenu: " + data);
 					var obj = JSON.parse(data);
 
 					var element = this.currentShapes[0];
