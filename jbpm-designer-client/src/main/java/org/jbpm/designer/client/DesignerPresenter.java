@@ -280,7 +280,7 @@ public class DesignerPresenter
 
         activityDataIOEditor.setInputAssignmentRows(assignmentData.getAssignmentRows(VariableType.INPUT));
         activityDataIOEditor.setOutputAssignmentRows(assignmentData.getAssignmentRows(VariableType.OUTPUT));
-        activityDataIOEditor.setDataTypes(assignmentData.getDataTypeNames());
+        activityDataIOEditor.setDataTypes(assignmentData.getDataTypes(), assignmentData.getDataTypeDisplayNames());
         activityDataIOEditor.setProcessVariables(assignmentData.getProcessVariableNames());
         activityDataIOEditor.show();
     }

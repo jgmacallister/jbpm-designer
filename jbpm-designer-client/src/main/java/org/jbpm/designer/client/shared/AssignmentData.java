@@ -18,6 +18,7 @@ public class AssignmentData {
     private List<Assignment> assignments = new ArrayList<Assignment>();
 
     private List<String> dataTypes = new ArrayList<String>();
+    private List<String> dataTypeDisplayNames = new ArrayList<String>();
 
     public AssignmentData() {
 
@@ -35,13 +36,15 @@ public class AssignmentData {
 
     /**
      * Creates AssignmentData based on a list of inputAssignmentRows and outputAssignmentRows.
-     * Note: This does only populate the processVariables referenced in assignments and does
-     * not populate the dataTypes member
+     * Note: This does not populate the processVariables referenced in assignments
      *
      * @param inputAssignmentRows
      * @param outputAssignmentRows
      */
-    public AssignmentData(List<AssignmentRow> inputAssignmentRows, List<AssignmentRow> outputAssignmentRows) {
+    public AssignmentData(List<AssignmentRow> inputAssignmentRows, List<AssignmentRow> outputAssignmentRows,
+            List<String> dataTypes, List<String> dataTypeDisplayNames) {
+        this.dataTypes = dataTypes;
+        this.dataTypeDisplayNames = dataTypeDisplayNames;
         if (inputAssignmentRows != null) {
             for (AssignmentRow row : inputAssignmentRows) {
                 convertAssignmentRow(row);
@@ -57,12 +60,12 @@ public class AssignmentData {
     protected void convertAssignmentRow(AssignmentRow assignmentRow) {
         if (assignmentRow.getVariableType() == VariableType.INPUT) {
             Variable var = new Variable(assignmentRow.getName(), assignmentRow.getVariableType(),
-                    assignmentRow.getDataType(), assignmentRow.getCustomDataType());
+                    getDataTypeFromDisplayName(assignmentRow.getDataType()), assignmentRow.getCustomDataType());
             inputVariables.add(var);
         }
         else if (assignmentRow.getVariableType() == VariableType.OUTPUT) {
             Variable var = new Variable(assignmentRow.getName(), assignmentRow.getVariableType(),
-                    assignmentRow.getDataType(), assignmentRow.getCustomDataType());
+                    getDataTypeFromDisplayName(assignmentRow.getDataType()), assignmentRow.getCustomDataType());
             outputVariables.add(var);
         }
         if (assignmentRow.getProcessVar() != null && !assignmentRow.getProcessVar().isEmpty()) {
@@ -195,17 +198,22 @@ public class AssignmentData {
 
     public void setDataTypes(String dataTypes) {
         this.dataTypes.clear();
+        this.dataTypeDisplayNames.clear();
         if (dataTypes != null && !dataTypes.isEmpty()) {
             String[] dts = dataTypes.split(",");
             for (String dt : dts) {
                 if (!dt.isEmpty()) {
                     dt = dt.trim();
                     if (!dt.isEmpty()) {
+                        String dtName = null;
+                        String dtDisplayName = null;
                         if (dt.contains(":")) {
-                            dt = dt.substring(0, dt.indexOf(':'));
+                            dtDisplayName = dt.substring(0, dt.indexOf(':'));
+                            dtName = dt.substring(dt.indexOf(':') + 1);
                         }
-                        if (!dt.isEmpty()) {
-                            this.dataTypes.add(dt.trim());
+                        if (!dtName.trim().isEmpty()) {
+                            this.dataTypeDisplayNames.add(dtDisplayName.trim());
+                            this.dataTypes.add(dtName.trim());
                         }
                     }
                 }
@@ -258,14 +266,36 @@ public class AssignmentData {
         }
     }
 
-    public List<String> getDataTypeNames() {
-        return dataTypes;
+    public List<String> getDataTypeDisplayNames() {
+        return dataTypeDisplayNames;
+    }
+
+    public String getDataTypeFromDisplayName(String dataTypeDisplayName) {
+        int i = dataTypeDisplayNames.indexOf(dataTypeDisplayName);
+        if (i > -1) {
+            return dataTypes.get(i);
+        }
+        else {
+            return dataTypeDisplayName;
+        }
+    }
+
+    public String getDisplayNameFromDataType(String dataType) {
+        int i = dataTypes.indexOf(dataType);
+        if (i > -1) {
+            return dataTypeDisplayNames.get(i);
+        }
+        else {
+            return dataType;
+        }
     }
 
     public String getDataTypesString() {
         StringBuilder sb = new StringBuilder();
-        for (String dataType : dataTypes) {
-            sb.append(dataType).append(':').append(dataType).append(',');
+        for (int i = 0; i < dataTypes.size(); i++) {
+            String dataTypeDisplayName = dataTypes.get(i);
+            String dataType = dataTypes.get(i);
+            sb.append(dataTypeDisplayName).append(':').append(dataType).append(',');
         }
         sb.setLength(sb.length() - 1);
         return sb.toString();
@@ -288,7 +318,8 @@ public class AssignmentData {
         List<AssignmentRow> rows = new ArrayList<AssignmentRow>();
         for (Assignment assignment : assignments) {
             if (assignment.getVariableType() == varType) {
-                AssignmentRow row = new AssignmentRow(assignment.getName(), assignment.getVariableType(), assignment.getDataType(),
+                String dataType = getDisplayNameFromDataType(assignment.getDataType());
+                AssignmentRow row = new AssignmentRow(assignment.getName(), assignment.getVariableType(), dataType,
                         assignment.getCustomDataType(), assignment.getProcessVarName(), assignment.getConstant());
                 rows.add(row);
             }

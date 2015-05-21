@@ -1,5 +1,6 @@
 package org.jbpm.designer.client.popup;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
@@ -41,6 +42,9 @@ public class ActivityDataIOEditor extends BaseModal {
         this.setWidth((double) Window.getClientWidth() * 0.6D + "px");
     }
 
+    private List<String> dataTypes = new ArrayList<String>();
+    private List<String> dataTypeDisplayNames = new ArrayList<String>();
+
     @PostConstruct
     public void init() {
         setTitle("Data I/O Editor");
@@ -58,7 +62,8 @@ public class ActivityDataIOEditor extends BaseModal {
                 //Window.alert(inputAssignmentsWidget.getAssignmentsAsString());
                 //Window.alert(outputAssignmentsWidget.getAssignmentsAsString());
                 if (callback != null) {
-                    AssignmentData data = new AssignmentData(inputAssignmentsWidget.getData(), outputAssignmentsWidget.getData());
+                    AssignmentData data = new AssignmentData(inputAssignmentsWidget.getData(),
+                            outputAssignmentsWidget.getData(), dataTypes, dataTypeDisplayNames);
                     String sData = Marshalling.toJSON(data);
                     callback.getData(sData);
                 }
@@ -98,9 +103,12 @@ public class ActivityDataIOEditor extends BaseModal {
         outputAssignmentsWidget.setData(outputAssignmentRows);
     }
 
-    public void setDataTypes(List<String> dataTypes) {
-        inputAssignmentsWidget.setDataTypes(dataTypes);
-        outputAssignmentsWidget.setDataTypes(dataTypes);
+    public void setDataTypes(List<String> dataTypes, List<String> dataTypeDisplayNames) {
+        this.dataTypes = dataTypes;
+        this.dataTypeDisplayNames = dataTypeDisplayNames;
+
+        inputAssignmentsWidget.setDataTypes(dataTypeDisplayNames);
+        outputAssignmentsWidget.setDataTypes(dataTypeDisplayNames);
     }
 
     public void setProcessVariables(List<String> processVariables) {
