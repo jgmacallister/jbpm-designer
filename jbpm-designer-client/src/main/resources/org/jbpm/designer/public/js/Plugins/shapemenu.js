@@ -389,10 +389,10 @@ ORYX.Plugins.ShapeMenuPlugin = {
 	},
 
 	showDataIOEditor: function() {
-		this.getDataTypesForDataIOEditor(this.doShowDataIOEditor);
+		this.getDataTypesForDataIOEditor();
 	},
 
-	getDataTypesForDataIOEditor: function(showEditorFunction) {
+	getDataTypesForDataIOEditor: function() {
 		var processJSON = ORYX.EDITOR.getSerializedJSON();
 		var processPackage = jsonPath(processJSON.evalJSON(), "$.properties.package");
 		var processId = jsonPath(processJSON.evalJSON(), "$.properties.id");
@@ -403,7 +403,7 @@ ORYX.Plugins.ShapeMenuPlugin = {
 				try {
 					if(response.responseText.length >= 0 && response.responseText != "false") {
 						var responseJson = Ext.decode(response.responseText);
-						showEditorFunction(responseJson);
+						this.doShowDataIOEditor(responseJson);
 					} else {
 						this.facade.raiseEvent({
 							type 		: ORYX.CONFIG.EVENT_NOTIFICATION_SHOW,
