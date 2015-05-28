@@ -1,6 +1,7 @@
 package org.jbpm.designer.client.popup;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -11,7 +12,11 @@ import com.github.gwtbootstrap.client.ui.Label;
 import com.github.gwtbootstrap.client.ui.TextBox;
 import com.github.gwtbootstrap.client.ui.ValueListBox;
 import com.github.gwtbootstrap.client.ui.constants.IconType;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -72,6 +77,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             appendable.append(s);
         }
     });
+    List<String> acceptableDataTypes = new ArrayList<String>();
 
     @Inject
     @Bound
@@ -118,9 +124,38 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     @PostConstruct
     private void init() {
+        customDataType.setVisible(false);
         dataType.addValueChangeHandler(new ValueChangeHandler<String>() {
             @Override public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
-                assignment.getModel().setCustomDataType(null);
+                String newValue = valueChangeEvent.getValue();
+                // If "Custom..." or the customDataType selected, show customDataType
+                if ("Custom ...".equals(newValue)
+                        || (newValue != null && !newValue.isEmpty() && newValue.equals(customDataType.getValue()))) {
+//                    dataType.setVisible(false);
+                    customDataType.setVisible(true);
+                    customDataType.setFocus(true);
+                }
+                // else if selected value is not the value in customDataType,
+                // set customDataType to null
+                else if (newValue != null && !newValue.isEmpty()) {
+                    if (!newValue.equals(customDataType.getValue())) {
+                        assignment.getModel().setCustomDataType(null);
+                    }
+                }
+            }
+        });
+
+        customDataType.addBlurHandler(new BlurHandler() {
+            @Override public void onBlur(BlurEvent blurEvent) {
+                String cdt = customDataType.getValue();
+                if (cdt != null && !cdt.isEmpty()) {
+                    if (!acceptableDataTypes.contains(cdt)) {
+                        acceptableDataTypes.add(cdt);
+                    }
+                    dataType.setValue(cdt);
+                }
+                customDataType.setVisible(false);
+//                dataType.setVisible(true);
             }
         });
 
@@ -153,10 +188,11 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     public void setModel(AssignmentRow model) {
         assignment.setModel(model);
 
-        updateAssignmentStyle();
+        initAssignmentControls();
     }
 
     public void setDataTypes(List<String> dataTypes) {
+        this.acceptableDataTypes = dataTypes;
         dataType.setAcceptableValues(dataTypes);
     }
 
@@ -170,10 +206,10 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     }
 
     /**
-     * Updates the CSS style of this row according to the state of the
+     * Updates the display of this row according to the state of the
      * corresponding {@link AssignmentRow}.
      */
-    private void updateAssignmentStyle() {
+    private void initAssignmentControls() {
         deleteButton.setIcon(IconType.REMOVE);
 
         if (assignment.getModel().getVariableType() == VariableType.INPUT) {
@@ -182,6 +218,14 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         else {
             direction.appendChild(new Icon(IconType.ARROW_RIGHT).getElement());
             constant.setVisible(false);
+        }
+
+        String cdt = assignment.getModel().getCustomDataType();
+        if (cdt != null && !cdt.isEmpty()) {
+            if (!acceptableDataTypes.contains(cdt)) {
+                acceptableDataTypes.add(cdt);
+            }
+            dataType.setValue(cdt);
         }
     /*
         if (assignment.getModel().isDone()) {
