@@ -112,7 +112,11 @@ public class ActivityDataIOEditor extends BaseModal {
     }
 
     public void setProcessVariables(List<String> processVariables) {
-        inputAssignmentsWidget.setProcessVariables(processVariables);
+        List<String> inProcessVariables = new ArrayList<String>();
+        inProcessVariables.add("Constant ...");
+        inProcessVariables.addAll(processVariables);
+        inputAssignmentsWidget.setProcessVariables(inProcessVariables);
+
         outputAssignmentsWidget.setProcessVariables(processVariables);
     }
 

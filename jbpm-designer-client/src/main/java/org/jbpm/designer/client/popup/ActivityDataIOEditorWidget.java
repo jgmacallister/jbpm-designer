@@ -37,7 +37,7 @@ public class ActivityDataIOEditorWidget extends Composite {
     private final Element tabletitle = DOM.createLabel();
 
     @DataField
-    private final Element constantth = DOM.createTH();
+    private final Element processvarorconstantth = DOM.createTH();
 
     /**
      * The list of assignments that currently exist.
@@ -55,10 +55,11 @@ public class ActivityDataIOEditorWidget extends Composite {
         this.variableType = variableType;
         if (variableType.equals(VariableType.INPUT)) {
             tabletitle.appendChild(new Label("Input Variables and Assignments").getElement());
+            processvarorconstantth.setInnerText("Process Var / Constant");
         }
         else {
             tabletitle.appendChild(new Label("Output Variables and Assignments").getElement());
-            constantth.setInnerText("");
+            processvarorconstantth.setInnerText("Process Var");
         }
     }
 

@@ -467,7 +467,7 @@ ORYX.Plugins.ShapeMenuPlugin = {
 
 		var dummyTypes = ""; //"UserCommand [org.dummy.examples.cmd]:org.dummy.examples.cmd.UserCommand,User [org.dummy.examples.data]:org.dummy.examples.data.User,";
 
-		var datatypes = "String:String, Integer:Integer, Boolean:Boolean, Float:Float, Object:Object, ******:******," + dummyTypes + javaDataTypes;
+		var datatypes = "String:String, Integer:Integer, Boolean:Boolean, Float:Float, Object:Object, Custom ...:Custom ..., ******:******," + dummyTypes + javaDataTypes;
 
 		var element = this.currentShapes[0];
 		var stencil = element.getStencil();

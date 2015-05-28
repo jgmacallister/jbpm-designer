@@ -103,6 +103,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             appendable.append(s);
         }
     });
+    List<String> acceptableProcessVars = new ArrayList<String>();
 
     @Inject
     @Bound
@@ -124,6 +125,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     @PostConstruct
     private void init() {
+        // Configure dataType and customDataType controls
         customDataType.setVisible(false);
         dataType.addValueChangeHandler(new ValueChangeHandler<String>() {
             @Override public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
@@ -165,9 +167,40 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             }
         });
 
+        // Configure processVar and constant controls
+        constant.setVisible(false);
         processVar.addValueChangeHandler(new ValueChangeHandler<String>() {
             @Override public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
-                assignment.getModel().setConstant(null);
+                String newValue = valueChangeEvent.getValue();
+                // If "Constant ..." or the constant selected, show constant
+                if ("Constant ...".equals(newValue)
+                        || (newValue != null && !newValue.isEmpty() && newValue.equals(constant.getValue()))) {
+//                    processVar.setVisible(false);
+                    constant.setVisible(true);
+                    constant.setFocus(true);
+                }
+                // else if selected value is not the value in constant,
+                // set constant to null
+                else if (newValue != null && !newValue.isEmpty()) {
+                    if (!newValue.equals(constant.getValue())) {
+                        assignment.getModel().setConstant(null);
+                    }
+                }
+            }
+        });
+
+        constant.addBlurHandler(new BlurHandler() {
+            @Override public void onBlur(BlurEvent blurEvent) {
+                String con = constant.getValue();
+                if (con != null && !con.isEmpty()) {
+                    con = createQuotedConstant(con);
+                    if (!acceptableProcessVars.contains(con)) {
+                        acceptableProcessVars.add(con);
+                    }
+                    processVar.setValue(con);
+                }
+                constant.setVisible(false);
+//                processVar.setVisible(true);
             }
         });
 
@@ -197,6 +230,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     }
 
     public void setProcessVariables(List<String> processVariables) {
+        this.acceptableProcessVars = processVariables;
         processVar.setAcceptableValues(processVariables);
     }
 
@@ -227,6 +261,15 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             }
             dataType.setValue(cdt);
         }
+
+        String con = assignment.getModel().getConstant();
+        if (con != null && !con.isEmpty()) {
+            con = createQuotedConstant(con);
+            if (!acceptableProcessVars.contains(con)) {
+                acceptableProcessVars.add(con);
+            }
+            processVar.setValue(con);
+        }
     /*
         if (assignment.getModel().isDone()) {
             removeStyleName("issue-open");
@@ -239,5 +282,19 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     */
     }
 
+    protected String createQuotedConstant(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        try
+        {
+            Double.parseDouble(str);
+        }
+        catch(NumberFormatException nfe)
+        {
+            return "\"" + str + "\"";
+        }
+        return str;
+    }
 
 }

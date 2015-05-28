@@ -74,8 +74,15 @@ public class AssignmentData {
             processVariables.add(processVar);
         }
 
+        String processVar;
+        if (assignmentRow.getConstant() != null && !assignmentRow.getConstant().isEmpty()) {
+            processVar = null;
+        }
+        else {
+            processVar = assignmentRow.getProcessVar();
+        }
         Assignment assignment = new Assignment(this, assignmentRow.getName(), assignmentRow.getVariableType(),
-                assignmentRow.getProcessVar(), assignmentRow.getConstant());
+                processVar, assignmentRow.getConstant());
         assignments.add(assignment);
     }
 
