@@ -9,6 +9,7 @@ import com.github.gwtbootstrap.client.ui.Button;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import org.jboss.errai.ui.client.widget.ListWidget;
@@ -28,6 +29,8 @@ public class ActivityDataIOEditorWidget extends Composite {
     private List<String> processVariables;
 
     private VariableType variableType = VariableType.INPUT;
+
+    boolean isSingleVar = false;
 
     @Inject
     @DataField
@@ -51,20 +54,43 @@ public class ActivityDataIOEditorWidget extends Composite {
     public void init() {
     }
 
-    public void setVariableType(VariableType variableType) {
-        this.variableType = variableType;
+    public void setIsSingleVar(boolean isSingleVar) {
+        this.isSingleVar = isSingleVar;
         if (variableType.equals(VariableType.INPUT)) {
-            tabletitle.appendChild(new Label("Input Variables and Assignments").getElement());
             processvarorconstantth.setInnerText("Source");
+            if (isSingleVar) {
+                tabletitle.setInnerText("Input Variable and Assignment");
+            }
+            else {
+                tabletitle.setInnerText("Input Variables and Assignments");
+            }
         }
         else {
-            tabletitle.appendChild(new Label("Output Variables and Assignments").getElement());
             processvarorconstantth.setInnerText("Target");
+            if (isSingleVar) {
+                tabletitle.setInnerText("Output Variable and Assignment");
+            }
+            else {
+                tabletitle.setInnerText("Output Variables and Assignments");
+            }
         }
+    }
+
+    public void setVariableType(VariableType variableType) {
+        this.variableType = variableType;
     }
 
     @EventHandler("addVarButton")
     public void handleAddvarButton(ClickEvent e) {
+        if (isSingleVar && assignments.getValue().size() > 0) {
+            Window.alert("Only 1 variable allowed.");
+        }
+        else {
+            addAssignment();
+        }
+    }
+
+    public void addAssignment() {
         AssignmentRow newAssignment = new AssignmentRow();
         newAssignment.setVariableType(variableType);
         List<AssignmentRow> as = assignments.getValue();
@@ -82,6 +108,7 @@ public class ActivityDataIOEditorWidget extends Composite {
         for (int i = 0; i < assignmentRows.size(); i++) {
             assignments.getWidget(i).setAssignments(assignments.getValue());
         }
+
     }
 
     public List<AssignmentRow> getData() {
@@ -105,4 +132,5 @@ public class ActivityDataIOEditorWidget extends Composite {
             assignments.getWidget(i).setProcessVariables(processVariables);
         }
     }
+
 }

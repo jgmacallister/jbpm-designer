@@ -26,6 +26,11 @@ public class ActivityDataIOEditor extends BaseModal {
 
     GetDataCallback callback = null;
 
+    boolean hasInputVars = true;
+    boolean isSingleInputVar = false;
+    boolean hasOutputVars = true;
+    boolean isSingleOutputVar = false;
+
     @Inject
     private ActivityDataIOEditorWidget inputAssignmentsWidget;
 
@@ -81,6 +86,29 @@ public class ActivityDataIOEditor extends BaseModal {
         });
         this.add(btnCancel);
 
+    }
+
+    public void configureWidgets(boolean hasInputVars, boolean isSingleInputVar, boolean hasOutputVars, boolean isSingleOutputVar) {
+        this.hasInputVars = hasInputVars;
+        this.isSingleInputVar = isSingleInputVar;
+        this.hasOutputVars = hasOutputVars;
+        this.isSingleOutputVar = isSingleOutputVar;
+
+        if (this.hasInputVars) {
+            inputAssignmentsWidget.setVisible(true);
+        }
+        else {
+            inputAssignmentsWidget.setVisible(false);
+        }
+        if (this.hasOutputVars) {
+            outputAssignmentsWidget.setVisible(true);
+        }
+        else {
+            outputAssignmentsWidget.setVisible(false);
+        }
+
+        inputAssignmentsWidget.setIsSingleVar(this.isSingleInputVar);
+        outputAssignmentsWidget.setIsSingleVar(this.isSingleOutputVar);
     }
 
     @Override

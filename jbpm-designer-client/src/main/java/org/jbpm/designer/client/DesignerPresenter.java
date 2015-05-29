@@ -277,11 +277,12 @@ public class DesignerPresenter
         }
 
         AssignmentData assignmentData = new AssignmentData(inputvars, outputvars, processvars, assignments, datatypes);
-
         activityDataIOEditor.setInputAssignmentRows(assignmentData.getAssignmentRows(VariableType.INPUT));
         activityDataIOEditor.setOutputAssignmentRows(assignmentData.getAssignmentRows(VariableType.OUTPUT));
         activityDataIOEditor.setDataTypes(assignmentData.getDataTypes(), assignmentData.getDataTypeDisplayNames());
         activityDataIOEditor.setProcessVariables(assignmentData.getProcessVariableNames());
+
+        activityDataIOEditor.configureWidgets(hasInputVars, isSingleInputVar, hasOutputVars, isSingleOutputVar);
         activityDataIOEditor.show();
     }
 

@@ -471,17 +471,6 @@ ORYX.Plugins.ShapeMenuPlugin = {
 
 		var element = this.currentShapes[0];
 		var stencil = element.getStencil();
-		var assignments = undefined;
-
-		if (stencil.property('oryx-assignments') !== undefined) {
-			assignments = element.properties['oryx-assignments'];
-		}
-		else if (stencil.property('oryx-datainputassociations') !== undefined) {
-			assignments = element.properties['oryx-datainputassociations'];
-		}
-		else if (stencil.property('oryx-dataoutputassociations') !== undefined) {
-			assignments = element.properties['oryx-dataoutputassociations'];
-		}
 
 		var datainput = undefined;
 		if (stencil.property('oryx-datainput') !== undefined) {
@@ -499,6 +488,17 @@ ORYX.Plugins.ShapeMenuPlugin = {
 		var dataoutputset = undefined;
 		if (stencil.property('oryx-dataoutputset') !== undefined) {
 			dataoutputset = element.properties['oryx-dataoutputset'];
+		}
+
+		var assignments = undefined;
+		if (stencil.property('oryx-assignments') !== undefined) {
+			assignments = element.properties['oryx-assignments'];
+		}
+		else if (stencil.property('oryx-datainputassociations') !== undefined) {
+			assignments = element.properties['oryx-datainputassociations'];
+		}
+		else if (stencil.property('oryx-dataoutputassociations') !== undefined) {
+			assignments = element.properties['oryx-dataoutputassociations'];
 		}
 
 		var processvars = "** Variable Definitions **";
@@ -519,17 +519,38 @@ ORYX.Plugins.ShapeMenuPlugin = {
 					var element = this.currentShapes[0];
 					var stencil = element.getStencil();
 
-					//element.setProperty('oryx-datainputset', obj['inputVariables']);
-					//element.setProperty('oryx-dataoutputset', obj['outputVariables']);
-					//element.setProperty('oryx-assignments', obj['assignments']);
 					var newProperties = new Hash();
-					newProperties['oryx-datainputset'] = obj['inputVariables'];
-					newProperties['oryx-dataoutputset'] = obj['outputVariables'];
-					newProperties['oryx-assignments'] = obj['assignments'];
 					var oldProperties = new Hash();
-					oldProperties['oryx-datainputset'] = element.properties['oryx-datainputset'];
-					oldProperties['oryx-dataoutputset'] = element.properties['oryx-dataoutputset'];
-					oldProperties['oryx-assignments'] = element.properties['oryx-assignments'];
+					if (stencil.property('oryx-datainput') !== undefined) {
+						newProperties['oryx-datainput'] = obj['inputVariables'];
+						oldProperties['oryx-datainput'] = element.properties['oryx-datainput'];
+					}
+					if (stencil.property('oryx-datainputset') !== undefined) {
+						newProperties['oryx-datainputset'] = obj['inputVariables'];
+						oldProperties['oryx-datainputset'] = element.properties['oryx-datainputset'];
+					}
+
+					if (stencil.property('oryx-dataoutput') !== undefined) {
+						newProperties['oryx-dataoutput'] = obj['outputVariables'];
+						oldProperties['oryx-dataoutput'] = element.properties['oryx-dataoutput'];
+					}
+					if (stencil.property('oryx-dataoutputset') !== undefined) {
+						newProperties['oryx-dataoutputset'] = obj['outputVariables'];
+						oldProperties['oryx-dataoutputset'] = element.properties['oryx-dataoutputset'];
+					}
+
+					if (stencil.property('oryx-assignments') !== undefined) {
+						newProperties['oryx-assignments'] = obj['assignments'];
+						oldProperties['oryx-assignments'] = element.properties['oryx-assignments'];
+					}
+					else if (stencil.property('oryx-datainputassociations') !== undefined) {
+						newProperties['oryx-datainputassociations'] = obj['assignments'];
+						oldProperties['oryx-datainputassociations'] = element.properties['oryx-datainputassociations'];
+					}
+					else if (stencil.property('oryx-dataoutputassociations') !== undefined) {
+						newProperties['oryx-dataoutputassociations'] = obj['assignments'];
+						oldProperties['oryx-dataoutputassociations'] = element.properties['oryx-dataoutputassociations'];
+					}
 
 					this.setElementProperties(element, newProperties, oldProperties);
 
