@@ -144,11 +144,18 @@ public class Assignment {
             else if (getConstant() != null && !getConstant().isEmpty()) {
                 sb.append(INPUT_ASSIGNMENT_PREFIX).append(getName()).append(ASSIGNMENT_OPERATOR_TOCONSTANT).append(getConstant());
             }
+            else {
+                sb.append(INPUT_ASSIGNMENT_PREFIX).append(ASSIGNMENT_OPERATOR_TOVARIABLE).append(getName());
+            }
         }
         else {
-            sb.append(OUTPUT_ASSIGNMENT_PREFIX).append(getName()).append(ASSIGNMENT_OPERATOR_TOVARIABLE).append(getProcessVarName());
+            if (getProcessVarName() != null && !getProcessVarName().isEmpty()) {
+                sb.append(OUTPUT_ASSIGNMENT_PREFIX).append(getName()).append(ASSIGNMENT_OPERATOR_TOVARIABLE).append(getProcessVarName());
+            }
+            else {
+                sb.append(OUTPUT_ASSIGNMENT_PREFIX).append(getName()).append(ASSIGNMENT_OPERATOR_TOVARIABLE);
+            }
         }
-
         return sb.toString();
     }
 

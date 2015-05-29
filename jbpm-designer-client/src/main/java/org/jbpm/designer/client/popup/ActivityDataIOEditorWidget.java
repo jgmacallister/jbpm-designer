@@ -55,11 +55,11 @@ public class ActivityDataIOEditorWidget extends Composite {
         this.variableType = variableType;
         if (variableType.equals(VariableType.INPUT)) {
             tabletitle.appendChild(new Label("Input Variables and Assignments").getElement());
-            processvarorconstantth.setInnerText("Process Var / Constant");
+            processvarorconstantth.setInnerText("Source");
         }
         else {
             tabletitle.appendChild(new Label("Output Variables and Assignments").getElement());
-            processvarorconstantth.setInnerText("Process Var");
+            processvarorconstantth.setInnerText("Target");
         }
     }
 
