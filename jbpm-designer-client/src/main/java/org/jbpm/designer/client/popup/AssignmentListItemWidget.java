@@ -11,12 +11,15 @@ import com.github.gwtbootstrap.client.ui.Icon;
 import com.github.gwtbootstrap.client.ui.Label;
 import com.github.gwtbootstrap.client.ui.TextBox;
 import com.github.gwtbootstrap.client.ui.ValueListBox;
+import com.github.gwtbootstrap.client.ui.base.Style;
 import com.github.gwtbootstrap.client.ui.constants.IconType;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -105,6 +108,10 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     });
     List<String> acceptableProcessVars = new ArrayList<String>();
 
+    public static final String EDIT_PROMPT = "Edit ";
+    public static final String ENTER_TYPE_PROMPT = "Enter type...";
+    public static final String CUSTOM_PROMPT = "Custom ...";
+
     @Inject
     @Bound
     @DataField
@@ -127,13 +134,21 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     private void init() {
         // Configure dataType and customDataType controls
         customDataType.setVisible(false);
+        customDataType.setPlaceholder(ENTER_TYPE_PROMPT);
         dataType.addValueChangeHandler(new ValueChangeHandler<String>() {
             @Override public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
                 String newValue = valueChangeEvent.getValue();
                 // If "Custom..." or the customDataType selected, show customDataType
-                if ("Custom ...".equals(newValue)
+                if (CUSTOM_PROMPT.equals(newValue)
                         || (newValue != null && !newValue.isEmpty() && newValue.equals(customDataType.getValue()))) {
-//                    dataType.setVisible(false);
+                    dataType.setVisible(false);
+                    customDataType.setValue("");
+                    customDataType.setVisible(true);
+                    customDataType.setFocus(true);
+                }
+                else if (newValue.startsWith(EDIT_PROMPT)) {
+                    dataType.setVisible(false);
+                    customDataType.setValue(newValue.substring(EDIT_PROMPT.length(), newValue.length() - 3));
                     customDataType.setVisible(true);
                     customDataType.setFocus(true);
                 }
@@ -152,14 +167,25 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                 String cdt = customDataType.getValue();
                 if (cdt != null && !cdt.isEmpty()) {
                     if (!acceptableDataTypes.contains(cdt)) {
+                        acceptableDataTypes.add(0, EDIT_PROMPT + cdt + "...");
                         acceptableDataTypes.add(cdt);
+                        setDataTypes(acceptableDataTypes);
                     }
                     dataType.setValue(cdt);
                 }
                 customDataType.setVisible(false);
-//                dataType.setVisible(true);
+                dataType.setVisible(true);
             }
         });
+
+//        customDataType.addKeyDownHandler(new KeyDownHandler() {
+//            @Override public void onKeyDown(KeyDownEvent keyDownEvent) {
+//                if (ENTER_TYPE_PROMPT.equals(customDataType.getValue())) {
+//                    customDataType.getElement().getStyle().clearColor();
+//                    customDataType.setValue("");
+//                }
+//            }
+//        });
 
         customDataType.addKeyPressHandler(new KeyPressHandler() {
             @Override public void onKeyPress(KeyPressEvent keyPressEvent) {

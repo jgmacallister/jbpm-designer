@@ -3,6 +3,7 @@ package org.jbpm.designer.client.popup;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import com.github.gwtbootstrap.client.ui.Button;
@@ -19,6 +20,7 @@ import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 import org.jbpm.designer.client.shared.AssignmentRow;
 import org.jbpm.designer.client.shared.Variable.VariableType;
+import org.uberfire.workbench.events.NotificationEvent;
 
 @Dependent
 @Templated("ActivityDataIOEditorWidget.html#widget" )
@@ -49,6 +51,9 @@ public class ActivityDataIOEditorWidget extends Composite {
     @DataField
     @Table(root="tbody")
     private ListWidget<AssignmentRow, AssignmentListItemWidget> assignments;
+
+    @Inject
+    private Event<NotificationEvent> notification;
 
     @PostConstruct
     public void init() {
@@ -83,7 +88,7 @@ public class ActivityDataIOEditorWidget extends Composite {
     @EventHandler("addVarButton")
     public void handleAddvarButton(ClickEvent e) {
         if (isSingleVar && assignments.getValue().size() > 0) {
-            Window.alert("Only 1 variable allowed.");
+            notification.fire(new NotificationEvent("Only single entry allowed", NotificationEvent.NotificationType.ERROR));
         }
         else {
             addAssignment();
