@@ -74,7 +74,8 @@ public class AssignmentData {
 
         String processVarName;
         // If there's a constant, use it rather than processVar
-        if (assignmentRow.getConstant() != null && !assignmentRow.getConstant().isEmpty()) {
+        String constant = assignmentRow.getConstant();
+        if (constant != null && !constant.isEmpty()) {
             processVarName = null;
         }
         else {
@@ -85,8 +86,9 @@ public class AssignmentData {
                 processVariables.add(processVar);
             }
         }
+        constant = AssignmentData.createUnquotedConstant(constant);
         Assignment assignment = new Assignment(this, assignmentRow.getName(), assignmentRow.getVariableType(),
-                processVarName, assignmentRow.getConstant());
+                processVarName, constant);
         assignments.add(assignment);
     }
 
@@ -373,4 +375,33 @@ public class AssignmentData {
 
         return sb.toString();
     }
+
+    public static String createQuotedConstant(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        try
+        {
+            Double.parseDouble(str);
+        }
+        catch(NumberFormatException nfe)
+        {
+            return "\"" + str + "\"";
+        }
+        return str;
+    }
+
+    public static String createUnquotedConstant(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        if (str.startsWith("\"")) {
+            str = str.substring(1);
+        }
+        if (str.endsWith("\"")) {
+            str = str.substring(0, str.length() - 1);
+        }
+        return str;
+    }
+
 }
