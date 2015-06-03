@@ -71,10 +71,11 @@ public class Variable {
     public String toString() {
         if (name != null && !name.isEmpty()) {
             StringBuilder sb = new StringBuilder().append(name);
-            if (dataType != null && !dataType.isEmpty()) {
-                sb.append(':').append(dataType);
-            } else if (customDataType != null && !customDataType.isEmpty()) {
+            if (customDataType != null && !customDataType.isEmpty()) {
                 sb.append(':').append(customDataType);
+            }
+            else if (dataType != null && !dataType.isEmpty()) {
+                sb.append(':').append(dataType);
             }
             return sb.toString();
         }

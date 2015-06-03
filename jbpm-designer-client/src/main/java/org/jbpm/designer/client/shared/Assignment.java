@@ -138,11 +138,11 @@ public class Assignment {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (getVariableType() == VariableType.INPUT) {
-            if (getProcessVarName() != null && !getProcessVarName().isEmpty()){
-                sb.append(INPUT_ASSIGNMENT_PREFIX).append(getProcessVarName()).append(ASSIGNMENT_OPERATOR_TOVARIABLE).append(getName());
-            }
-            else if (getConstant() != null && !getConstant().isEmpty()) {
+            if (getConstant() != null && !getConstant().isEmpty()) {
                 sb.append(INPUT_ASSIGNMENT_PREFIX).append(getName()).append(ASSIGNMENT_OPERATOR_TOCONSTANT).append(getConstant());
+            }
+            else if (getProcessVarName() != null && !getProcessVarName().isEmpty()) {
+                sb.append(INPUT_ASSIGNMENT_PREFIX).append(getProcessVarName()).append(ASSIGNMENT_OPERATOR_TOVARIABLE).append(getName());
             }
             else {
                 sb.append(INPUT_ASSIGNMENT_PREFIX).append(ASSIGNMENT_OPERATOR_TOVARIABLE).append(getName());

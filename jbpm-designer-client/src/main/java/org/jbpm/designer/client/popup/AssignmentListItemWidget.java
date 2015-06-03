@@ -2,7 +2,9 @@ package org.jbpm.designer.client.popup;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -80,7 +82,6 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             appendable.append(s);
         }
     });
-    List<String> acceptableDataTypes = new ArrayList<String>();
 
     @Inject
     @Bound
@@ -106,11 +107,14 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             appendable.append(s);
         }
     });
-    List<String> acceptableProcessVars = new ArrayList<String>();
+
+    Map<ValueListBox<String>, List<String>> mapAcceptableValues = new HashMap<ValueListBox<String>, List<String>>();
 
     public static final String EDIT_PROMPT = "Edit ";
-    public static final String ENTER_TYPE_PROMPT = "Enter type...";
     public static final String CUSTOM_PROMPT = "Custom ...";
+    public static final String ENTER_TYPE_PROMPT = "Enter type...";
+    public static final String CONSTANT_PROMPT = "Constant ...";
+    public static final String ENTER_CONSTANT_PROMPT = "Enter constant...";
 
     @Inject
     @Bound
@@ -130,112 +134,85 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         this.assignments = assignments;
     }
 
-    @PostConstruct
-    private void init() {
-        // Configure dataType and customDataType controls
-        customDataType.setVisible(false);
-        customDataType.setPlaceholder(ENTER_TYPE_PROMPT);
-        dataType.addValueChangeHandler(new ValueChangeHandler<String>() {
+    private void initEditableListBox(final ValueListBox<String> listBox, final TextBox textBox, final boolean bQuoteStringValues,
+            final String customPrompt, final String placeholder, final String editPrompt) {
+        textBox.setVisible(true);
+        textBox.setPlaceholder(placeholder);
+        listBox.addValueChangeHandler(new ValueChangeHandler<String>() {
             @Override public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
                 String newValue = valueChangeEvent.getValue();
-                // If "Custom..." or the customDataType selected, show customDataType
-                if (CUSTOM_PROMPT.equals(newValue)
-                        || (newValue != null && !newValue.isEmpty() && newValue.equals(customDataType.getValue()))) {
-                    dataType.setVisible(false);
-                    customDataType.setValue("");
-                    customDataType.setVisible(true);
-                    customDataType.setFocus(true);
+                // If "Custom..." selected, show textBox
+                if (customPrompt.equals(newValue)) {
+                    textBox.setValue("");
+//                    listBox.setVisible(false);
+//                    textBox.setVisible(true);
+                    textBox.setFocus(true);
+                } else if (newValue.startsWith(editPrompt)) {
+                    textBox.setValue(newValue.substring(editPrompt.length(), newValue.length() - 3));
+//                    listBox.setVisible(false);
+//                    textBox.setVisible(true);
+                    textBox.setFocus(true);
                 }
-                else if (newValue.startsWith(EDIT_PROMPT)) {
-                    dataType.setVisible(false);
-                    customDataType.setValue(newValue.substring(EDIT_PROMPT.length(), newValue.length() - 3));
-                    customDataType.setVisible(true);
-                    customDataType.setFocus(true);
-                }
-                // else if selected value is not the value in customDataType,
-                // set customDataType to null
-                else if (newValue != null && !newValue.isEmpty()) {
-                    if (!newValue.equals(customDataType.getValue())) {
-                        assignment.getModel().setCustomDataType(null);
-                    }
+                // else set textBox to empty
+                else if (newValue != null) {
+                    setModelTextValue(textBox, "");
                 }
             }
         });
 
-        customDataType.addBlurHandler(new BlurHandler() {
+        textBox.addBlurHandler(new BlurHandler() {
             @Override public void onBlur(BlurEvent blurEvent) {
-                String cdt = customDataType.getValue();
-                if (cdt != null && !cdt.isEmpty()) {
-                    if (!acceptableDataTypes.contains(cdt)) {
-                        acceptableDataTypes.add(0, EDIT_PROMPT + cdt + "...");
-                        acceptableDataTypes.add(cdt);
-                        setDataTypes(acceptableDataTypes);
+                String cdt = textBox.getValue();
+                if (cdt != null) {
+                    if (bQuoteStringValues) {
+                        cdt = createQuotedConstant(cdt);
                     }
-                    dataType.setValue(cdt);
+                    // Set the value even if it's ""
+                    listBox.setValue(cdt);
+
+                    if (!cdt.isEmpty()) {
+                        // Add Edit <custom> ..." to acceptableValues
+                        // N.B. Don't add custom value itself, because selecting it
+                        // causes an error when the dialog is dismissed
+                        List<String> acceptableValues = getAcceptableValues(listBox);
+                        String promptWithValue = editPrompt + cdt + "...";
+                        if (!acceptableValues.contains(promptWithValue)) {
+                            acceptableValues.add(cdt);
+                            acceptableValues.add(promptWithValue);
+                            listBox.setAcceptableValues(acceptableValues);
+                        }
+                    }
                 }
-                customDataType.setVisible(false);
-                dataType.setVisible(true);
+                //textBox.setVisible(false);
+                //listBox.setVisible(true);
             }
         });
 
-//        customDataType.addKeyDownHandler(new KeyDownHandler() {
-//            @Override public void onKeyDown(KeyDownEvent keyDownEvent) {
-//                if (ENTER_TYPE_PROMPT.equals(customDataType.getValue())) {
-//                    customDataType.getElement().getStyle().clearColor();
-//                    customDataType.setValue("");
-//                }
+
+//        textBox.addKeyPressHandler(new KeyPressHandler() {
+//            @Override public void onKeyPress(KeyPressEvent keyPressEvent) {
+//                listBox.setValue("");
 //            }
 //        });
 
-        customDataType.addKeyPressHandler(new KeyPressHandler() {
-            @Override public void onKeyPress(KeyPressEvent keyPressEvent) {
-                assignment.getModel().setDataType(null);
-            }
-        });
+    }
 
-        // Configure processVar and constant controls
-        constant.setVisible(false);
-        processVar.addValueChangeHandler(new ValueChangeHandler<String>() {
-            @Override public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
-                String newValue = valueChangeEvent.getValue();
-                // If "Constant ..." or the constant selected, show constant
-                if ("Constant ...".equals(newValue)
-                        || (newValue != null && !newValue.isEmpty() && newValue.equals(constant.getValue()))) {
-//                    processVar.setVisible(false);
-                    constant.setVisible(true);
-                    constant.setFocus(true);
-                }
-                // else if selected value is not the value in constant,
-                // set constant to null
-                else if (newValue != null && !newValue.isEmpty()) {
-                    if (!newValue.equals(constant.getValue())) {
-                        assignment.getModel().setConstant(null);
-                    }
-                }
-            }
-        });
+    protected void setModelTextValue(final TextBox textBox, String value) {
+        if (textBox == customDataType) {
+            assignment.getModel().setCustomDataType(value);
+        }
+        else if (textBox == constant) {
+            assignment.getModel().setConstant(value);
+        }
+    }
 
-        constant.addBlurHandler(new BlurHandler() {
-            @Override public void onBlur(BlurEvent blurEvent) {
-                String con = constant.getValue();
-                if (con != null && !con.isEmpty()) {
-                    con = createQuotedConstant(con);
-                    if (!acceptableProcessVars.contains(con)) {
-                        acceptableProcessVars.add(con);
-                    }
-                    processVar.setValue(con);
-                }
-                constant.setVisible(false);
-//                processVar.setVisible(true);
-            }
-        });
+    @PostConstruct
+    private void init() {
+        // Configure dataType and customDataType controls
+        initEditableListBox(dataType, customDataType, false, CUSTOM_PROMPT, ENTER_TYPE_PROMPT, EDIT_PROMPT);
 
-        constant.addKeyPressHandler(new KeyPressHandler() {
-            @Override public void onKeyPress(KeyPressEvent keyPressEvent) {
-                assignment.getModel().setProcessVar(null);
-            }
-        });
-
+        // Configure dataType and customDataType controls
+        initEditableListBox(processVar, constant, true, CONSTANT_PROMPT, ENTER_CONSTANT_PROMPT, EDIT_PROMPT);
     }
 
     @Override
@@ -251,18 +228,22 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     }
 
     public void setDataTypes(List<String> dataTypes) {
-        this.acceptableDataTypes = dataTypes;
+        mapAcceptableValues.put(dataType, dataTypes);
         dataType.setAcceptableValues(dataTypes);
     }
 
     public void setProcessVariables(List<String> processVariables) {
-        this.acceptableProcessVars = processVariables;
+        mapAcceptableValues.put(processVar, processVariables);
         processVar.setAcceptableValues(processVariables);
     }
 
     @EventHandler("deleteButton")
     public void handleDeleteButton(ClickEvent e) {
         assignments.remove(assignment.getModel());
+    }
+
+    private List<String> getAcceptableValues(final ValueListBox<String> listBox) {
+        return mapAcceptableValues.get(listBox);
     }
 
     /**
@@ -282,7 +263,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
         String cdt = assignment.getModel().getCustomDataType();
         if (cdt != null && !cdt.isEmpty()) {
-            if (!acceptableDataTypes.contains(cdt)) {
+            List<String> acceptableDataTypes = getAcceptableValues(dataType);
+            if (acceptableDataTypes != null && !acceptableDataTypes.contains(cdt)) {
                 acceptableDataTypes.add(cdt);
             }
             dataType.setValue(cdt);
@@ -291,7 +273,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         String con = assignment.getModel().getConstant();
         if (con != null && !con.isEmpty()) {
             con = createQuotedConstant(con);
-            if (!acceptableProcessVars.contains(con)) {
+            List<String> acceptableProcessVars = getAcceptableValues(processVar);
+            if (acceptableProcessVars != null && !acceptableProcessVars.contains(con)) {
                 acceptableProcessVars.add(con);
             }
             processVar.setValue(con);
