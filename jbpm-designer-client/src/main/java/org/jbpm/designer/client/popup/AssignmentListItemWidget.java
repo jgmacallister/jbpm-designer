@@ -144,13 +144,13 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                 // If "Custom..." selected, show textBox
                 if (customPrompt.equals(newValue)) {
                     textBox.setValue("");
-//                    listBox.setVisible(false);
-//                    textBox.setVisible(true);
+                    //listBox.setVisible(false);
+                    //textBox.setVisible(true);
                     textBox.setFocus(true);
                 } else if (newValue.startsWith(editPrompt)) {
                     textBox.setValue(newValue.substring(editPrompt.length(), newValue.length() - 3));
-//                    listBox.setVisible(false);
-//                    textBox.setVisible(true);
+                    //listBox.setVisible(false);
+                    //textBox.setVisible(true);
                     textBox.setFocus(true);
                 }
                 // else set textBox to empty
@@ -167,8 +167,6 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                     if (bQuoteStringValues) {
                         cdt = createQuotedConstant(cdt);
                     }
-                    // Set the value even if it's ""
-                    listBox.setValue(cdt);
 
                     if (!cdt.isEmpty()) {
                         // Add Edit <custom> ..." to acceptableValues
@@ -182,6 +180,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                             listBox.setAcceptableValues(acceptableValues);
                         }
                     }
+                    // Set the value even if it's ""
+                    listBox.setValue(cdt);
                 }
                 //textBox.setVisible(false);
                 //listBox.setVisible(true);

@@ -1,7 +1,9 @@
 package org.jbpm.designer.client.shared;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.jbpm.designer.client.shared.Variable.VariableType;
@@ -19,6 +21,8 @@ public class AssignmentData {
 
     private List<String> dataTypes = new ArrayList<String>();
     private List<String> dataTypeDisplayNames = new ArrayList<String>();
+    private Map<String, String> mapDisplayNameToDataType = new HashMap<String, String>();
+    private Map<String, String> mapDataTypeToDisplayName = new HashMap<String, String>();
 
     public AssignmentData() {
 
@@ -36,15 +40,13 @@ public class AssignmentData {
 
     /**
      * Creates AssignmentData based on a list of inputAssignmentRows and outputAssignmentRows.
-     * Note: This does not populate the processVariables referenced in assignments
      *
      * @param inputAssignmentRows
      * @param outputAssignmentRows
      */
     public AssignmentData(List<AssignmentRow> inputAssignmentRows, List<AssignmentRow> outputAssignmentRows,
             List<String> dataTypes, List<String> dataTypeDisplayNames) {
-        this.dataTypes = dataTypes;
-        this.dataTypeDisplayNames = dataTypeDisplayNames;
+        setDataTypes(dataTypes, dataTypeDisplayNames);
         if (inputAssignmentRows != null) {
             for (AssignmentRow row : inputAssignmentRows) {
                 convertAssignmentRow(row);
@@ -57,6 +59,7 @@ public class AssignmentData {
         }
     }
 
+
     protected void convertAssignmentRow(AssignmentRow assignmentRow) {
         if (assignmentRow.getVariableType() == VariableType.INPUT) {
             Variable var = new Variable(assignmentRow.getName(), assignmentRow.getVariableType(),
@@ -68,24 +71,24 @@ public class AssignmentData {
                     getDataTypeFromDisplayName(assignmentRow.getDataType()), assignmentRow.getCustomDataType());
             outputVariables.add(var);
         }
-        if (assignmentRow.getProcessVar() != null && !assignmentRow.getProcessVar().isEmpty()) {
-            Variable processVar = new Variable(assignmentRow.getProcessVar(), VariableType.PROCESS,
-                    assignmentRow.getDataType(), assignmentRow.getCustomDataType());
-            processVariables.add(processVar);
-        }
 
-        String processVar;
+        String processVarName;
+        // If there's a constant, use it rather than processVar
         if (assignmentRow.getConstant() != null && !assignmentRow.getConstant().isEmpty()) {
-            processVar = null;
+            processVarName = null;
         }
         else {
-            processVar = assignmentRow.getProcessVar();
+            processVarName = assignmentRow.getProcessVar();
+            if (processVarName != null && !processVarName.isEmpty()) {
+                Variable processVar = new Variable(processVarName, VariableType.PROCESS,
+                        assignmentRow.getDataType(), assignmentRow.getCustomDataType());
+                processVariables.add(processVar);
+            }
         }
         Assignment assignment = new Assignment(this, assignmentRow.getName(), assignmentRow.getVariableType(),
-                processVar, assignmentRow.getConstant());
+                processVarName, assignmentRow.getConstant());
         assignments.add(assignment);
     }
-
 
     public List<Variable> getInputVariables() {
         return inputVariables;
@@ -203,30 +206,57 @@ public class AssignmentData {
         return dataTypes;
     }
 
-    public void setDataTypes(String dataTypes) {
+    protected void setDataTypes(String dataTypes) {
         this.dataTypes.clear();
         this.dataTypeDisplayNames.clear();
+        mapDisplayNameToDataType.clear();
+        mapDataTypeToDisplayName.clear();
+
         if (dataTypes != null && !dataTypes.isEmpty()) {
             String[] dts = dataTypes.split(",");
             for (String dt : dts) {
+                dt = dt.trim();
                 if (!dt.isEmpty()) {
-                    dt = dt.trim();
-                    if (!dt.isEmpty()) {
-                        String dtName = null;
-                        String dtDisplayName = null;
-                        if (dt.contains(":")) {
-                            dtDisplayName = dt.substring(0, dt.indexOf(':'));
-                            dtName = dt.substring(dt.indexOf(':') + 1);
-                        }
-                        if (!dtName.trim().isEmpty()) {
-                            this.dataTypeDisplayNames.add(dtDisplayName.trim());
-                            this.dataTypes.add(dtName.trim());
-                        }
+                    String dtName = "";
+                    String dtDisplayName = "";
+                    if (dt.contains(":")) {
+                        dtDisplayName = dt.substring(0, dt.indexOf(':')).trim();
+                        dtName = dt.substring(dt.indexOf(':') + 1).trim();
+                    }
+                    else {
+                        dtDisplayName = dt.trim();
+                        dtName = dt.trim();
+                    }
+                    if (!dtName.isEmpty()) {
+                        this.dataTypeDisplayNames.add(dtDisplayName);
+                        this.dataTypes.add(dtName);
+                        mapDisplayNameToDataType.put(dtDisplayName, dtName);
+                        mapDataTypeToDisplayName.put(dtName, dtDisplayName);
                     }
                 }
             }
         }
+    }
 
+    protected void setDataTypes(List<String> dataTypes, List<String> dataTypeDisplayNames) {
+        this.dataTypes.clear();
+        this.dataTypeDisplayNames.clear();
+        mapDisplayNameToDataType.clear();
+        mapDataTypeToDisplayName.clear();
+
+        this.dataTypes = dataTypes;
+        this.dataTypeDisplayNames = dataTypeDisplayNames;
+
+        for (int i = 0; i < dataTypeDisplayNames.size(); i++) {
+            if (i < dataTypes.size()) {
+                mapDisplayNameToDataType.put(dataTypeDisplayNames.get(i), dataTypes.get(i));
+                mapDataTypeToDisplayName.put(dataTypes.get(i), dataTypeDisplayNames.get(i));
+            }
+            else {
+                mapDisplayNameToDataType.put(dataTypeDisplayNames.get(i), dataTypeDisplayNames.get(i));
+                mapDataTypeToDisplayName.put(dataTypeDisplayNames.get(i), dataTypeDisplayNames.get(i));
+            }
+        }
     }
 
     public Variable findProcessVariable(String processVarName) {
@@ -278,9 +308,8 @@ public class AssignmentData {
     }
 
     public String getDataTypeFromDisplayName(String dataTypeDisplayName) {
-        int i = dataTypeDisplayNames.indexOf(dataTypeDisplayName);
-        if (i > -1) {
-            return dataTypes.get(i);
+        if (mapDisplayNameToDataType.get(dataTypeDisplayName) != null) {
+            return mapDisplayNameToDataType.get(dataTypeDisplayName);
         }
         else {
             return dataTypeDisplayName;
@@ -288,9 +317,8 @@ public class AssignmentData {
     }
 
     public String getDisplayNameFromDataType(String dataType) {
-        int i = dataTypes.indexOf(dataType);
-        if (i > -1) {
-            return dataTypeDisplayNames.get(i);
+        if (mapDataTypeToDisplayName.get(dataType) != null) {
+            return mapDataTypeToDisplayName.get(dataType);
         }
         else {
             return dataType;
