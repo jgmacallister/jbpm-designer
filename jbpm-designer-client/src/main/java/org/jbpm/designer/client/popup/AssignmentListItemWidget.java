@@ -109,6 +109,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     });
 
     Map<ValueListBox<String>, List<String>> mapAcceptableValues = new HashMap<ValueListBox<String>, List<String>>();
+    Map<ValueListBox<String>, List<String>> mapCustomValues = new HashMap<ValueListBox<String>, List<String>>();
 
     public static final String EDIT_PROMPT = "Edit ";
     public static final String CUSTOM_PROMPT = "Custom ...";
@@ -153,6 +154,13 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                     //textBox.setVisible(true);
                     textBox.setFocus(true);
                 }
+                else if (isCustomValue(listBox, newValue)) {
+                    String textValue = newValue;
+                    if (bQuoteStringValues) {
+                        textValue = createUnquotedConstant(newValue);
+                    }
+                    setModelTextValue(textBox, textValue);
+                }
                 // else set textBox to empty
                 else if (newValue != null) {
                     setModelTextValue(textBox, "");
@@ -164,11 +172,11 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             @Override public void onBlur(BlurEvent blurEvent) {
                 String cdt = textBox.getValue();
                 if (cdt != null) {
-                    if (bQuoteStringValues) {
-                        cdt = createQuotedConstant(cdt);
-                    }
-
                     if (!cdt.isEmpty()) {
+                        if (bQuoteStringValues) {
+                            cdt = createQuotedConstant(cdt);
+                        }
+                        addCustomValue(listBox, cdt);
                         // Add Edit <custom> ..." to acceptableValues
                         // N.B. Don't add custom value itself, because selecting it
                         // causes an error when the dialog is dismissed
@@ -246,6 +254,24 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         return mapAcceptableValues.get(listBox);
     }
 
+    private void addCustomValue(final ValueListBox<String> listBox, String value) {
+        if (mapCustomValues.get(listBox) == null) {
+            mapCustomValues.put(listBox, new ArrayList<String>());
+        }
+        List<String> list = mapCustomValues.get(listBox);
+        if (!list.contains(value)) {
+            list.add(value);
+        }
+    }
+
+    private boolean isCustomValue(final ValueListBox<String> listBox, String value) {
+        if (mapCustomValues.get(listBox) == null) {
+            return false;
+        } else {
+            return mapCustomValues.get(listBox).contains(value);
+        }
+    }
+
     /**
      * Updates the display of this row according to the state of the
      * corresponding {@link AssignmentRow}.
@@ -306,4 +332,16 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         return str;
     }
 
+    protected String createUnquotedConstant(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        if (str.startsWith("\"")) {
+            str = str.substring(1);
+        }
+        if (str.endsWith("\"")) {
+            str = str.substring(0, str.length() - 1);
+        }
+        return str;
+    }
 }
