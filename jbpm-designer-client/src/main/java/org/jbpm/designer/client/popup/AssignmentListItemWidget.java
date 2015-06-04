@@ -21,6 +21,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.text.shared.Renderer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import org.jboss.errai.databinding.client.api.DataBinder;
 import org.jboss.errai.ui.client.widget.HasModel;
@@ -29,6 +30,7 @@ import org.jboss.errai.ui.shared.api.annotations.Bound;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
+import org.jbpm.designer.client.popup.ActivityDataIOEditorWidget.ListBoxValues;
 import org.jbpm.designer.client.shared.AssignmentData;
 import org.jbpm.designer.client.shared.AssignmentRow;
 import org.jbpm.designer.client.shared.Variable.VariableType;
@@ -97,8 +99,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         }
     });
 
-    Map<ValueListBox<String>, List<String>> mapAcceptableValues = new HashMap<ValueListBox<String>, List<String>>();
-    Map<ValueListBox<String>, List<String>> mapCustomValues = new HashMap<ValueListBox<String>, List<String>>();
+    ListBoxValues dataTypeListBoxValues;
+    ListBoxValues processVarListBoxValues;
 
     public static final String EDIT_PROMPT = "Edit ";
     public static final String CUSTOM_PROMPT = "Custom ...";
@@ -144,7 +146,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                     //textBox.setVisible(true);
                     textBox.setFocus(true);
                 }
-                else if (isCustomValue(listBox, newValue)) {
+                else if (getListBoxValues(listBox).isCustomValue(newValue)) {
                     String textValue = newValue;
                     if (bQuoteStringValues) {
                         textValue = AssignmentData.createUnquotedConstant(newValue);
@@ -167,17 +169,12 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                         if (bQuoteStringValues) {
                             cdt = AssignmentData.createQuotedConstant(cdt);
                         }
-                        addCustomValue(listBox, cdt);
-                        // Add Edit <custom> ..." to acceptableValues
-                        // N.B. Don't add custom value itself, because selecting it
-                        // causes an error when the dialog is dismissed
-                        List<String> acceptableValues = getAcceptableValues(listBox);
+                        getListBoxValues(listBox).addCustomValue(cdt);
                         String promptWithValue = editPrompt + cdt + "...";
-                        if (!acceptableValues.contains(promptWithValue)) {
-                            acceptableValues.add(0, cdt);
-                            acceptableValues.add(1, promptWithValue);
-                            listBox.setAcceptableValues(acceptableValues);
-                        }
+                        List<String> newAcceptableValues = new ArrayList<String>();
+                        newAcceptableValues.add(cdt);
+                        newAcceptableValues.add(promptWithValue);
+                        getListBoxValues(listBox).addAcceptableValues(newAcceptableValues);
                     }
                     // Set the value even if it's ""
                     setModelValue(textBox, cdt);
@@ -187,6 +184,16 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                 //listBox.setVisible(true);
             }
         });
+    }
+
+    protected ListBoxValues getListBoxValues(final ValueListBox<String> listBox) {
+        if (dataTypeListBoxValues.containsListBox(listBox)) {
+            return dataTypeListBoxValues;
+        }
+        else if (processVarListBoxValues.containsListBox(listBox)) {
+            return processVarListBoxValues;
+        }
+        return null;
     }
 
     protected void setModelValue(final TextBox textBox, String value) {
@@ -211,6 +218,9 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     @PostConstruct
     private void init() {
+        Window.alert("In init");
+
+
         // Configure dataType and customDataType controls
         initEditableListBox(dataType, customDataType, false, CUSTOM_PROMPT, ENTER_TYPE_PROMPT, EDIT_PROMPT);
 
@@ -225,19 +235,23 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     @Override
     public void setModel(AssignmentRow model) {
+        Window.alert("In setModel");
+
         assignment.setModel(model);
 
         initAssignmentControls();
     }
 
-    public void setDataTypes(List<String> dataTypes) {
-        mapAcceptableValues.put(dataType, dataTypes);
-        dataType.setAcceptableValues(dataTypes);
+    public void setDataTypes(List<String> dataTypes, ListBoxValues listBoxValues) {
+        Window.alert("In setDataTypes");
+        this.dataTypeListBoxValues = listBoxValues;
+        listBoxValues.register(dataType, dataTypes, null);
     }
 
-    public void setProcessVariables(List<String> processVariables) {
-        mapAcceptableValues.put(processVar, processVariables);
-        processVar.setAcceptableValues(processVariables);
+    public void setProcessVariables(List<String> processVariables, ListBoxValues listBoxValues) {
+        Window.alert("In setProcessVariables");
+        this.processVarListBoxValues = listBoxValues;
+        listBoxValues.register(processVar, processVariables, null);
     }
 
     @EventHandler("deleteButton")
@@ -245,27 +259,6 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         assignments.remove(assignment.getModel());
     }
 
-    private List<String> getAcceptableValues(final ValueListBox<String> listBox) {
-        return mapAcceptableValues.get(listBox);
-    }
-
-    private void addCustomValue(final ValueListBox<String> listBox, String value) {
-        if (mapCustomValues.get(listBox) == null) {
-            mapCustomValues.put(listBox, new ArrayList<String>());
-        }
-        List<String> list = mapCustomValues.get(listBox);
-        if (!list.contains(value)) {
-            list.add(value);
-        }
-    }
-
-    private boolean isCustomValue(final ValueListBox<String> listBox, String value) {
-        if (mapCustomValues.get(listBox) == null) {
-            return false;
-        } else {
-            return mapCustomValues.get(listBox).contains(value);
-        }
-    }
 
     /**
      * Updates the display of this row according to the state of the
@@ -284,10 +277,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
         String cdt = assignment.getModel().getCustomDataType();
         if (cdt != null && !cdt.isEmpty()) {
-            List<String> acceptableDataTypes = getAcceptableValues(dataType);
-            if (acceptableDataTypes != null && !acceptableDataTypes.contains(cdt)) {
-                acceptableDataTypes.add(cdt);
-            }
+            dataTypeListBoxValues.addCustomValue(cdt);
             dataType.setValue(cdt);
         }
         else if (assignment.getModel().getDataType() != null){
@@ -297,10 +287,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         String con = assignment.getModel().getConstant();
         if (con != null && !con.isEmpty()) {
             con = AssignmentData.createQuotedConstant(con);
-            List<String> acceptableProcessVars = getAcceptableValues(processVar);
-            if (acceptableProcessVars != null && !acceptableProcessVars.contains(con)) {
-                acceptableProcessVars.add(con);
-            }
+            processVarListBoxValues.addCustomValue(con);
             processVar.setValue(con);
         }
         else if (assignment.getModel().getProcessVar() != null){
