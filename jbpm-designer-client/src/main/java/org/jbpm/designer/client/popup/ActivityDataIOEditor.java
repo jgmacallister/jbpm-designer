@@ -109,6 +109,14 @@ public class ActivityDataIOEditor extends BaseModal {
         }
         void unregister(ValueListBox<String> listBox) {
             observers.remove(listBox);
+            if (observers.isEmpty()) {
+                clearValueLists();
+            }
+        }
+        void clearValueLists() {
+            acceptableValuesWithCustomValues.clear();
+            acceptableValuesWithoutCustomValues.clear();
+            customValues.clear();
         }
         void addValue(String newValue, String newValuePrompt, String customValue) {
             if (newValuePrompt != null && !acceptableValuesWithCustomValues.contains(newValuePrompt)) {

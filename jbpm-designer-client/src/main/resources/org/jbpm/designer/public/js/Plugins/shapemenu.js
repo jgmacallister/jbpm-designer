@@ -501,16 +501,8 @@ ORYX.Plugins.ShapeMenuPlugin = {
 			assignments = element.properties['oryx-dataoutputassociations'];
 		}
 
-		var processvars = "** Variable Definitions **";
-		var processJSON = ORYX.EDITOR.getSerializedJSON();
-		var vardefs = jsonPath(processJSON.evalJSON(), "$.properties.vardefs");
-		if(vardefs) {
-			vardefs.forEach(function(item){
-				if(item.length > 0) {
-					processvars = processvars + ',' + item;
-				}
-			});
-		}
+		var processvars = this.getProcessVars(element);
+
 		parent.designersignalshowdataioeditor(datainput, datainputset, dataoutput, dataoutputset, processvars, assignments, datatypes,
 				function(data) {
 					//					window.alert("passed back to shapemenu: " + data);
@@ -606,6 +598,67 @@ ORYX.Plugins.ShapeMenuPlugin = {
 			});
 		}.bind(this));
 
+	},
+
+	getProcessVars : function(element) {
+		var vars = "** Variable Definitions **";
+
+		if(element && element.parent) {
+			var parentvars = this.getParentVars(element.parent);
+			if (parentvars && parentvars.length > 0) {
+				vars = vars + parentvars;
+			}
+		}
+
+		var processvars = "";
+		var processJSON = ORYX.EDITOR.getSerializedJSON();
+		var vardefs = jsonPath(processJSON.evalJSON(), "$.properties.vardefs");
+		if(vardefs) {
+			vardefs.forEach(function(item){
+				if(item.length > 0) {
+					processvars = processvars + ',' + item;
+				}
+			});
+		}
+		if (processvars && processvars.length > 0) {
+			vars = vars + processvars;
+		}
+		return vars;
+	},
+
+	getParentVars : function(thisNode) {
+		var parentvars = "";
+		if(thisNode) {
+			if(thisNode._stencil._jsonStencil.id == "http://b3mn.org/stencilset/bpmn2.0#MultipleInstanceSubprocess"
+					|| thisNode._stencil._jsonStencil.id == "http://b3mn.org/stencilset/bpmn2.0#Subprocess"
+					|| thisNode._stencil._jsonStencil.id == "http://b3mn.org/stencilset/bpmn2.0#AdHocSubprocess") {
+
+				var vardefsprop = thisNode.properties["oryx-vardefs"];
+				if(vardefsprop && vardefsprop.length > 0) {
+					parentvars = parentvars + ',' + vardefsprop;
+				}
+
+				if(thisNode._stencil._jsonStencil.id == "http://b3mn.org/stencilset/bpmn2.0#MultipleInstanceSubprocess") {
+					var midatainputsprop = thisNode.properties["oryx-multipleinstancedatainput"];
+					if(midatainputsprop && midatainputsprop.length > 0) {
+						parentvars = parentvars + ',' + midatainputsprop;
+					}
+
+
+					var midataOutputsprop = thisNode.properties["oryx-multipleinstancedataoutput"];
+					if(midataOutputsprop && midataOutputsprop.length > 0) {
+						parentvars = parentvars + ',' + midataOutputsprop;
+					}
+				}
+			}
+			if(thisNode.parent) {
+				var grandparentvars = this.getParentVars(thisNode.parent);
+				if (grandparentvars && grandparentvars.length > 0) {
+					parentvars = parentvars + grandparentvars;
+				}
+			}
+		}
+		return parentvars;
 	},
 
 	onSelectionChanged: function(event) {
