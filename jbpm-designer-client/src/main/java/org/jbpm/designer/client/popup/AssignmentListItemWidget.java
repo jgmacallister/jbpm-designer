@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import com.github.gwtbootstrap.client.ui.Button;
@@ -230,6 +231,12 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         initEditableListBox(processVar, constant, true, CONSTANT_PROMPT, ENTER_CONSTANT_PROMPT, EDIT_PROMPT);
     }
 
+    @PreDestroy
+    private void cleanUp() {
+        dataTypeListBoxValues.unregister(dataType);
+        processVarListBoxValues.unregister(processVar);
+    }
+
     @Override
     public AssignmentRow getModel() {
         return assignment.getModel();
@@ -244,7 +251,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     public void setDataTypes(List<String> dataTypes, ListBoxValues listBoxValues) {
         this.dataTypeListBoxValues = listBoxValues;
-        dataTypeListBoxValues.register(dataType, dataTypes, null);
+        dataTypeListBoxValues.register(dataType, dataTypes, null, true);
         String cdt = assignment.getModel().getCustomDataType();
         if (cdt != null && !cdt.isEmpty()) {
             addValueToListBoxValues(dataType, cdt, EDIT_PROMPT, false);
@@ -253,7 +260,11 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     public void setProcessVariables(List<String> processVariables, ListBoxValues listBoxValues) {
         this.processVarListBoxValues = listBoxValues;
-        processVarListBoxValues.register(processVar, processVariables, null);
+        boolean showCustomValues = false;
+        if (assignment.getModel().getVariableType() == VariableType.INPUT) {
+            showCustomValues = true;
+        }
+        processVarListBoxValues.register(processVar, processVariables, null, showCustomValues);
         String con = assignment.getModel().getConstant();
         if (con != null && !con.isEmpty()) {
             addValueToListBoxValues(processVar, con, EDIT_PROMPT, true);

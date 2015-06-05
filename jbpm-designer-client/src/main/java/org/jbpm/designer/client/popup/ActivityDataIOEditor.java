@@ -1,7 +1,9 @@
 package org.jbpm.designer.client.popup;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -57,17 +59,30 @@ public class ActivityDataIOEditor extends BaseModal {
      *
      */
     class ListBoxValues {
-        List<String> acceptableValues = new ArrayList<String>();
+        List<String> acceptableValuesWithCustomValues = new ArrayList<String>();
+        List<String> acceptableValuesWithoutCustomValues = new ArrayList<String>();
         List<String> customValues = new ArrayList<String>();
 
-        List<ValueListBox<String>> observers = new ArrayList<ValueListBox<String>>();
+        Map<ValueListBox<String>, Boolean> observers = new HashMap<ValueListBox<String>, Boolean>();
 
-        void register(ValueListBox<String> listBox, List<String> acceptableValues, List<String> customValues) {
+        void register(ValueListBox<String> listBox, List<String> acceptableValues, List<String> customValues,
+                boolean displayCustomValues) {
             if (acceptableValues != null) {
                 for (int i = 0; i < acceptableValues.size(); i++) {
                     String value = acceptableValues.get(i);
-                    if (! this.acceptableValues.contains(value)) {
-                        this.acceptableValues.add(i, value);
+                    if (! acceptableValuesWithCustomValues.contains(value)) {
+                        acceptableValuesWithCustomValues.add(value);
+                    }
+                    else {
+                        // all new entries to be added are at the start
+                        break;
+                    }
+                }
+                for (int i = 0; i < acceptableValues.size(); i++) {
+                    String value = acceptableValues.get(i);
+                    if (! acceptableValuesWithoutCustomValues.contains(value)
+                            && ! value.endsWith("...")) {
+                        acceptableValuesWithoutCustomValues.add(value);
                     }
                     else {
                         // all new entries to be added are at the start
@@ -87,8 +102,8 @@ public class ActivityDataIOEditor extends BaseModal {
                     }
                 }
             }
-            if (!observers.contains(listBox)) {
-                observers.add(listBox);
+            if (!observers.containsKey(listBox)) {
+                observers.put(listBox, displayCustomValues);
             }
             update();
         }
@@ -96,11 +111,11 @@ public class ActivityDataIOEditor extends BaseModal {
             observers.remove(listBox);
         }
         void addValue(String newValue, String newValuePrompt, String customValue) {
-            if (newValuePrompt != null && !acceptableValues.contains(newValuePrompt)) {
-                acceptableValues.add(0, newValuePrompt);
+            if (newValuePrompt != null && !acceptableValuesWithCustomValues.contains(newValuePrompt)) {
+                acceptableValuesWithCustomValues.add(0, newValuePrompt);
             }
-            if (newValue != null && !acceptableValues.contains(newValue)) {
-                acceptableValues.add(0, newValue);
+            if (newValue != null && !acceptableValuesWithCustomValues.contains(newValue)) {
+                acceptableValuesWithCustomValues.add(0, newValue);
             }
             if (customValue != null && !customValues.contains(customValue)) {
                 customValues.add(customValue);
@@ -116,8 +131,14 @@ public class ActivityDataIOEditor extends BaseModal {
             }
         }
         void update() {
-            for (ValueListBox<String>  observer : observers) {
-                observer.setAcceptableValues(acceptableValues);
+            for (ValueListBox<String>  observer : observers.keySet()) {
+                boolean showCustomValues = observers.get(observer);
+                if (showCustomValues) {
+                    observer.setAcceptableValues(acceptableValuesWithCustomValues);
+                }
+                else {
+                    observer.setAcceptableValues(acceptableValuesWithoutCustomValues);
+                }
             }
         }
         boolean containsListBox(ValueListBox<String> listBox) {
@@ -125,7 +146,7 @@ public class ActivityDataIOEditor extends BaseModal {
                 return false;
             }
             else {
-                return observers.contains(listBox);
+                return observers.containsKey(listBox);
             }
         }
     }
