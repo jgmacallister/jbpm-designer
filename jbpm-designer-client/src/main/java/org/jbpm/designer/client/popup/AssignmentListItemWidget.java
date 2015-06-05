@@ -30,7 +30,7 @@ import org.jboss.errai.ui.shared.api.annotations.Bound;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
-import org.jbpm.designer.client.popup.ActivityDataIOEditorWidget.ListBoxValues;
+import org.jbpm.designer.client.popup.ActivityDataIOEditor.ListBoxValues;
 import org.jbpm.designer.client.shared.AssignmentData;
 import org.jbpm.designer.client.shared.AssignmentRow;
 import org.jbpm.designer.client.shared.Variable.VariableType;
@@ -163,22 +163,17 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
         textBox.addBlurHandler(new BlurHandler() {
             @Override public void onBlur(BlurEvent blurEvent) {
-                String cdt = textBox.getValue();
-                if (cdt != null) {
-                    if (!cdt.isEmpty()) {
-                        if (bQuoteStringValues) {
-                            cdt = AssignmentData.createQuotedConstant(cdt);
-                        }
-                        getListBoxValues(listBox).addCustomValue(cdt);
-                        String promptWithValue = editPrompt + cdt + "...";
-                        List<String> newAcceptableValues = new ArrayList<String>();
-                        newAcceptableValues.add(cdt);
-                        newAcceptableValues.add(promptWithValue);
-                        getListBoxValues(listBox).addAcceptableValues(newAcceptableValues);
+                String value = textBox.getValue();
+                if (value != null) {
+                    if (!value.isEmpty()) {
+                        addValueToListBoxValues(listBox, value, editPrompt, bQuoteStringValues);
+                    }
+                    if (bQuoteStringValues) {
+                        value = AssignmentData.createQuotedConstant(value);
                     }
                     // Set the value even if it's ""
-                    setModelValue(textBox, cdt);
-                    setModelValue(listBox, cdt);
+                    setModelValue(textBox, value);
+                    setModelValue(listBox, value);
                 }
                 //textBox.setVisible(false);
                 //listBox.setVisible(true);
@@ -194,6 +189,16 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             return processVarListBoxValues;
         }
         return null;
+    }
+
+    protected void addValueToListBoxValues(final ValueListBox<String> listBox, String value, String editPrompt,
+            boolean bQuoteStringValues) {
+        if (bQuoteStringValues) {
+            value = AssignmentData.createQuotedConstant(value);
+        }
+        String promptWithValue = editPrompt + value + "...";
+        getListBoxValues(listBox).addValue(value, promptWithValue, value);
+
     }
 
     protected void setModelValue(final TextBox textBox, String value) {
@@ -218,9 +223,6 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     @PostConstruct
     private void init() {
-        Window.alert("In init");
-
-
         // Configure dataType and customDataType controls
         initEditableListBox(dataType, customDataType, false, CUSTOM_PROMPT, ENTER_TYPE_PROMPT, EDIT_PROMPT);
 
@@ -235,23 +237,27 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     @Override
     public void setModel(AssignmentRow model) {
-        Window.alert("In setModel");
-
         assignment.setModel(model);
 
         initAssignmentControls();
     }
 
     public void setDataTypes(List<String> dataTypes, ListBoxValues listBoxValues) {
-        Window.alert("In setDataTypes");
         this.dataTypeListBoxValues = listBoxValues;
-        listBoxValues.register(dataType, dataTypes, null);
+        dataTypeListBoxValues.register(dataType, dataTypes, null);
+        String cdt = assignment.getModel().getCustomDataType();
+        if (cdt != null && !cdt.isEmpty()) {
+            addValueToListBoxValues(dataType, cdt, EDIT_PROMPT, false);
+        }
     }
 
     public void setProcessVariables(List<String> processVariables, ListBoxValues listBoxValues) {
-        Window.alert("In setProcessVariables");
         this.processVarListBoxValues = listBoxValues;
-        listBoxValues.register(processVar, processVariables, null);
+        processVarListBoxValues.register(processVar, processVariables, null);
+        String con = assignment.getModel().getConstant();
+        if (con != null && !con.isEmpty()) {
+            addValueToListBoxValues(processVar, con, EDIT_PROMPT, true);
+        }
     }
 
     @EventHandler("deleteButton")
@@ -277,7 +283,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
         String cdt = assignment.getModel().getCustomDataType();
         if (cdt != null && !cdt.isEmpty()) {
-            dataTypeListBoxValues.addCustomValue(cdt);
+            customDataType.setValue(cdt);
             dataType.setValue(cdt);
         }
         else if (assignment.getModel().getDataType() != null){
@@ -287,7 +293,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         String con = assignment.getModel().getConstant();
         if (con != null && !con.isEmpty()) {
             con = AssignmentData.createQuotedConstant(con);
-            processVarListBoxValues.addCustomValue(con);
+            constant.setValue(con);
             processVar.setValue(con);
         }
         else if (assignment.getModel().getProcessVar() != null){

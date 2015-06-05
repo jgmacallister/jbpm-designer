@@ -21,6 +21,7 @@ import org.jboss.errai.ui.client.widget.Table;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
+import org.jbpm.designer.client.popup.ActivityDataIOEditor.ListBoxValues;
 import org.jbpm.designer.client.shared.AssignmentRow;
 import org.jbpm.designer.client.shared.Variable.VariableType;
 import org.uberfire.workbench.events.NotificationEvent;
@@ -32,6 +33,8 @@ public class ActivityDataIOEditorWidget extends Composite {
 
     private List<String> dataTypes;
     private List<String> processVariables;
+    ListBoxValues dataTypeListBoxValues;
+    ListBoxValues processVarListBoxValues;
 
     private VariableType variableType = VariableType.INPUT;
 
@@ -57,91 +60,6 @@ public class ActivityDataIOEditorWidget extends Composite {
 
     @Inject
     private Event<NotificationEvent> notification;
-
-
-    class ListBoxValues {
-        List<String> acceptableValues = new ArrayList<String>();
-        List<String> customValues = new ArrayList<String>();
-
-        List<ValueListBox<String>> observers = new ArrayList<ValueListBox<String>>();
-
-        void register(ValueListBox<String> listBox, List<String> acceptableValues, List<String> customValues) {
-            if (acceptableValues != null) {
-                for (int i = 0; i < acceptableValues.size(); i++) {
-                    String value = acceptableValues.get(i);
-                    if (! this.acceptableValues.contains(value)) {
-                        this.acceptableValues.add(i, value);
-                    }
-                    else {
-                        // all new entries to be added are at the start
-                        break;
-                    }
-                }
-            }
-            if (customValues != null) {
-                for (int i = 0; i < customValues.size(); i++) {
-                    String value = customValues.get(i);
-                    if (! this.customValues.contains(value)) {
-                        this.customValues.add(i, value);
-                    }
-                    else {
-                        // all new entries to be added are at the start
-                        break;
-                    }
-                }
-            }
-            if (!observers.contains(listBox)) {
-                observers.add(listBox);
-            }
-            update();
-        }
-        void unregister(ValueListBox<String> listBox) {
-            observers.remove(listBox);
-        }
-        void addAcceptableValue(String newValue) {
-            if (newValue != null && !acceptableValues.contains(newValue)) {
-                acceptableValues.add(0, newValue);
-                update();
-            }
-        }
-        void addAcceptableValues(List<String> newValues) {
-            for (String newValue : newValues) {
-                if (newValue != null && !acceptableValues.contains(newValue)) {
-                    acceptableValues.add(0, newValue);
-                }
-            }
-            update();
-        }
-        void addCustomValue(String newValue) {
-            if (newValue != null && !customValues.contains(newValue)) {
-                customValues.add(newValue);
-            }
-        }
-        boolean isCustomValue(String value) {
-            if (value == null || value.isEmpty()) {
-                return false;
-            }
-            else {
-                return customValues.contains(value);
-            }
-        }
-        void update() {
-            for (ValueListBox<String>  observer : observers) {
-                observer.setAcceptableValues(acceptableValues);
-            }
-        }
-        boolean containsListBox(ValueListBox<String> listBox) {
-            if (listBox == null) {
-                return false;
-            }
-            else {
-                return observers.contains(listBox);
-            }
-        }
-    }
-
-    ListBoxValues dataTypeListBoxValues = new ListBoxValues();
-    ListBoxValues processVarListBoxValues = new ListBoxValues();
 
 
     @PostConstruct
@@ -213,15 +131,17 @@ public class ActivityDataIOEditorWidget extends Composite {
         return variableType;
     }
 
-    public void setDataTypes(List<String> dataTypes) {
+    public void setDataTypes(List<String> dataTypes, ListBoxValues dataTypeListBoxValues) {
         this.dataTypes = dataTypes;
+        this.dataTypeListBoxValues = dataTypeListBoxValues;
         for (int i = 0; i < assignments.getValue().size(); i++) {
             assignments.getWidget(i).setDataTypes(dataTypes, dataTypeListBoxValues);
         }
     }
 
-    public void setProcessVariables(List<String> processVariables) {
+    public void setProcessVariables(List<String> processVariables, ListBoxValues processVarListBoxValues) {
         this.processVariables = processVariables;
+        this.processVarListBoxValues = processVarListBoxValues;
         for (int i = 0; i < assignments.getValue().size(); i++) {
             assignments.getWidget(i).setProcessVariables(processVariables, processVarListBoxValues);
         }

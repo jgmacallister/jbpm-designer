@@ -7,6 +7,7 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 import com.github.gwtbootstrap.client.ui.Button;
+import com.github.gwtbootstrap.client.ui.ValueListBox;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
@@ -49,6 +50,90 @@ public class ActivityDataIOEditor extends BaseModal {
 
     private List<String> dataTypes = new ArrayList<String>();
     private List<String> dataTypeDisplayNames = new ArrayList<String>();
+
+    /**
+     * Class for making sure the ListBoxes in the dialog are updated with new
+     * dataTypes / Constants as the user adds them.
+     *
+     */
+    class ListBoxValues {
+        List<String> acceptableValues = new ArrayList<String>();
+        List<String> customValues = new ArrayList<String>();
+
+        List<ValueListBox<String>> observers = new ArrayList<ValueListBox<String>>();
+
+        void register(ValueListBox<String> listBox, List<String> acceptableValues, List<String> customValues) {
+            if (acceptableValues != null) {
+                for (int i = 0; i < acceptableValues.size(); i++) {
+                    String value = acceptableValues.get(i);
+                    if (! this.acceptableValues.contains(value)) {
+                        this.acceptableValues.add(i, value);
+                    }
+                    else {
+                        // all new entries to be added are at the start
+                        break;
+                    }
+                }
+            }
+            if (customValues != null) {
+                for (int i = 0; i < customValues.size(); i++) {
+                    String value = customValues.get(i);
+                    if (! this.customValues.contains(value)) {
+                        this.customValues.add(i, value);
+                    }
+                    else {
+                        // all new entries to be added are at the start
+                        break;
+                    }
+                }
+            }
+            if (!observers.contains(listBox)) {
+                observers.add(listBox);
+            }
+            update();
+        }
+        void unregister(ValueListBox<String> listBox) {
+            observers.remove(listBox);
+        }
+        void addValue(String newValue, String newValuePrompt, String customValue) {
+            if (newValuePrompt != null && !acceptableValues.contains(newValuePrompt)) {
+                acceptableValues.add(0, newValuePrompt);
+            }
+            if (newValue != null && !acceptableValues.contains(newValue)) {
+                acceptableValues.add(0, newValue);
+            }
+            if (customValue != null && !customValues.contains(customValue)) {
+                customValues.add(customValue);
+            }
+            update();
+        }
+        boolean isCustomValue(String value) {
+            if (value == null || value.isEmpty()) {
+                return false;
+            }
+            else {
+                return customValues.contains(value);
+            }
+        }
+        void update() {
+            for (ValueListBox<String>  observer : observers) {
+                observer.setAcceptableValues(acceptableValues);
+            }
+        }
+        boolean containsListBox(ValueListBox<String> listBox) {
+            if (listBox == null) {
+                return false;
+            }
+            else {
+                return observers.contains(listBox);
+            }
+        }
+    }
+
+    ListBoxValues dataTypeListBoxValues = new ListBoxValues();
+    ListBoxValues processVarListBoxValues = new ListBoxValues();
+
+
 
     @PostConstruct
     public void init() {
@@ -135,17 +220,17 @@ public class ActivityDataIOEditor extends BaseModal {
         this.dataTypes = dataTypes;
         this.dataTypeDisplayNames = dataTypeDisplayNames;
 
-        inputAssignmentsWidget.setDataTypes(dataTypeDisplayNames);
-        outputAssignmentsWidget.setDataTypes(dataTypeDisplayNames);
+        inputAssignmentsWidget.setDataTypes(dataTypeDisplayNames, dataTypeListBoxValues);
+        outputAssignmentsWidget.setDataTypes(dataTypeDisplayNames, dataTypeListBoxValues);
     }
 
     public void setProcessVariables(List<String> processVariables) {
         List<String> inProcessVariables = new ArrayList<String>();
         inProcessVariables.add("Constant ...");
         inProcessVariables.addAll(processVariables);
-        inputAssignmentsWidget.setProcessVariables(inProcessVariables);
+        inputAssignmentsWidget.setProcessVariables(inProcessVariables, processVarListBoxValues);
 
-        outputAssignmentsWidget.setProcessVariables(processVariables);
+        outputAssignmentsWidget.setProcessVariables(processVariables, processVarListBoxValues);
     }
 
     //   public void hide() {
