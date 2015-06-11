@@ -604,6 +604,26 @@ public class Bpmn2JsonMarshaller {
             properties.put("datainputassociations", assignmentString);
         }
 
+        // signal scope
+        String signalScope = null;
+        if(event.getExtensionValues() != null && event.getExtensionValues().size() > 0) {
+            for(ExtensionAttributeValue extattrval : event.getExtensionValues()) {
+                FeatureMap extensionElements = extattrval.getValue();
+
+                List<MetaDataType> metadataExtensions = (List<MetaDataType>) extensionElements
+                        .get(DroolsPackage.Literals.DOCUMENT_ROOT__META_DATA, true);
+
+                for(MetaDataType metaType : metadataExtensions) {
+                    if(metaType.getMetaValue() != null && metaType.getMetaValue().length() > 0) {
+                        signalScope = metaType.getMetaValue();
+                    }
+                }
+            }
+        }
+        if(signalScope != null) {
+            properties.put("signalscope", signalScope);
+        }
+
         // event definitions
         List<EventDefinition> eventdefs = event.getEventDefinitions();
         for(EventDefinition ed : eventdefs) {
@@ -1365,6 +1385,8 @@ public class Bpmn2JsonMarshaller {
                             formatToWrite = "java";
                         } else if(format.equals("http://www.mvel.org/2.0")) {
                             formatToWrite = "mvel";
+                        } else if(format.equals("http://www.javascript.com/javascript")) {
+                            formatToWrite = "javascript";
                         } else {
                             formatToWrite = "java";
                         }
@@ -1383,6 +1405,8 @@ public class Bpmn2JsonMarshaller {
                             formatToWrite = "java";
                         } else if(format.equals("http://www.mvel.org/2.0")) {
                             formatToWrite = "mvel";
+                        } else if(format.equals("http://www.javascript.com/javascript")) {
+                            formatToWrite = "javascript";
                         } else {
                             formatToWrite = "java";
                         }
@@ -1482,6 +1506,8 @@ public class Bpmn2JsonMarshaller {
                     formatToWrite = "java";
                 } else if(format.equals("http://www.mvel.org/2.0")) {
                     formatToWrite = "mvel";
+                } else if(format.equals("http://www.javascript.com/javascript")) {
+                    formatToWrite = "javascript";
                 } else {
                 	// default to java
                     formatToWrite = "java";
@@ -2058,6 +2084,8 @@ public class Bpmn2JsonMarshaller {
                             formatToWrite = "java";
                         } else if(format.equals("http://www.mvel.org/2.0")) {
                             formatToWrite = "mvel";
+                        } else if(format.equals("http://www.javascript.com/javascript")) {
+                            formatToWrite = "javascript";
                         } else {
                             formatToWrite = "java";
                         }
@@ -2076,6 +2104,8 @@ public class Bpmn2JsonMarshaller {
                             formatToWrite = "java";
                         } else if(format.equals("http://www.mvel.org/2.0")) {
                             formatToWrite = "mvel";
+                        } else if(format.equals("http://www.javascript.com/javascript")) {
+                            formatToWrite = "javascript";
                         } else {
                             formatToWrite = "java";
                         }
@@ -2606,6 +2636,8 @@ public class Bpmn2JsonMarshaller {
                             formatToWrite = "java";
                         } else if(format.equals("http://www.mvel.org/2.0")) {
                             formatToWrite = "mvel";
+                        } else if(format.equals("http://www.javascript.com/javascript")) {
+                            formatToWrite = "javascript";
                         } else {
                             formatToWrite = "java";
                         }
@@ -2624,6 +2656,8 @@ public class Bpmn2JsonMarshaller {
                             formatToWrite = "java";
                         } else if(format.equals("http://www.mvel.org/2.0")) {
                             formatToWrite = "mvel";
+                        } else if(format.equals("http://www.javascript.com/javascript")) {
+                            formatToWrite = "javascript";
                         } else {
                             formatToWrite = "java";
                         }
@@ -2910,7 +2944,9 @@ public class Bpmn2JsonMarshaller {
     	            cdStr = "drools";
     	        } else if(cd.equalsIgnoreCase("http://www.mvel.org/2.0")) {
     	            cdStr = "mvel";
-    	        } else {
+    	        } else if(cd.equalsIgnoreCase("http://www.javascript.com/javascript")) {
+                    cdStr = "javascript";
+                } else {
     	            // default to mvel
     	            cdStr = "mvel";
     	        }

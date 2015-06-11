@@ -3539,6 +3539,8 @@ public class Bpmn2JsonUnmarshaller {
                     scriptLanguage = "http://www.java.com/java";
                 } else if(properties.get("script_language").equals("mvel")) {
                     scriptLanguage = "http://www.mvel.org/2.0";
+                } else if(properties.get("script_language").equals("javascript")) {
+                    scriptLanguage = "http://www.javascript.com/javascript";
                 } else {
                     // default to java
                     scriptLanguage = "http://www.java.com/java";
@@ -3566,6 +3568,8 @@ public class Bpmn2JsonUnmarshaller {
                     scriptLanguage = "http://www.java.com/java";
                 } else if(properties.get("script_language").equals("mvel")) {
                     scriptLanguage = "http://www.mvel.org/2.0";
+                } else if(properties.get("script_language").equals("javascript")) {
+                    scriptLanguage = "http://www.javascript.com/javascript";
                 } else {
                     // default to java
                     scriptLanguage = "http://www.java.com/java";
@@ -4540,6 +4544,21 @@ public class Bpmn2JsonUnmarshaller {
             }
         }
 
+        // signal scope metadata
+        if(properties.get("signalscope") != null && properties.get("signalscope").length() > 0 && !properties.get("signalscope").equals("default")) {
+            MetaDataType metadata = DroolsFactory.eINSTANCE.createMetaDataType();
+            metadata.setName("customScope");
+            metadata.setMetaValue(wrapInCDATABlock(properties.get("signalscope")));
+
+            if(event.getExtensionValues() == null || event.getExtensionValues().size() < 1) {
+                ExtensionAttributeValue extensionElement = Bpmn2Factory.eINSTANCE.createExtensionAttributeValue();
+                event.getExtensionValues().add(extensionElement);
+            }
+            FeatureMap.Entry extensionElementEntry = new SimpleFeatureMapEntry(
+                    (Internal) DroolsPackage.Literals.DOCUMENT_ROOT__META_DATA, metadata);
+            event.getExtensionValues().get(0).getValue().add(extensionElementEntry);
+        }
+
         try {
             EventDefinition ed = event.getEventDefinitions().get(0);
             if(ed instanceof TimerEventDefinition) {
@@ -4907,6 +4926,8 @@ public class Bpmn2JsonUnmarshaller {
                 scriptLanguage = "http://www.java.com/java";
             } else if(properties.get("script_language").equals("mvel")) {
                 scriptLanguage = "http://www.mvel.org/2.0";
+            } else if(properties.get("script_language").equals("javascript")) {
+                scriptLanguage = "http://www.javascript.com/javascript";
             } else {
                 // default to java
                 scriptLanguage = "http://www.java.com/java";
@@ -4939,6 +4960,8 @@ public class Bpmn2JsonUnmarshaller {
                 scriptLanguage = "http://www.java.com/java";
             } else if(properties.get("script_language").equals("mvel")) {
                 scriptLanguage = "http://www.mvel.org/2.0";
+            } else if(properties.get("script_language").equals("javascript")) {
+                scriptLanguage = "http://www.javascript.com/javascript";
             } else {
                 // default to java
                 scriptLanguage = "http://www.java.com/java";
@@ -5277,6 +5300,8 @@ public class Bpmn2JsonUnmarshaller {
                     scriptLanguage = "http://www.java.com/java";
                 } else if(properties.get("script_language").equals("mvel")) {
                     scriptLanguage = "http://www.mvel.org/2.0";
+                } else if(properties.get("script_language").equals("javascript")) {
+                    scriptLanguage = "http://www.javascript.com/javascript";
                 } else {
                     // default to java
                     scriptLanguage = "http://www.java.com/java";
@@ -5304,6 +5329,8 @@ public class Bpmn2JsonUnmarshaller {
                     scriptLanguage = "http://www.java.com/java";
                 } else if(properties.get("script_language").equals("mvel")) {
                     scriptLanguage = "http://www.mvel.org/2.0";
+                } else if(properties.get("script_language").equals("javascript")) {
+                    scriptLanguage = "http://www.javascript.com/javascript";
                 } else {
                     // default to java
                     scriptLanguage = "http://www.java.com/java";
@@ -5727,6 +5754,8 @@ public class Bpmn2JsonUnmarshaller {
                     scriptLanguage = "http://www.java.com/java";
                 } else if(properties.get("script_language").equals("mvel")) {
                     scriptLanguage = "http://www.mvel.org/2.0";
+                } else if(properties.get("script_language").equals("javascript")) {
+                    scriptLanguage = "http://www.javascript.com/javascript";
                 } else {
                     // default to java
                     scriptLanguage = "http://www.java.com/java";
@@ -5754,6 +5783,8 @@ public class Bpmn2JsonUnmarshaller {
                     scriptLanguage = "http://www.java.com/java";
                 } else if(properties.get("script_language").equals("mvel")) {
                     scriptLanguage = "http://www.mvel.org/2.0";
+                } else if(properties.get("script_language").equals("javascript")) {
+                    scriptLanguage = "http://www.javascript.com/javascript";
                 } else {
                     // default to java
                     scriptLanguage = "http://www.java.com/java";
@@ -5883,6 +5914,8 @@ public class Bpmn2JsonUnmarshaller {
                 scriptLanguage = "http://www.java.com/java";
             } else if(properties.get("script_language").equals("mvel")) {
                 scriptLanguage = "http://www.mvel.org/2.0";
+            } else if(properties.get("script_language").equals("javascript")) {
+                scriptLanguage = "http://www.javascript.com/javascript";
             } else {
                 // default to java
                 scriptLanguage = "http://www.java.com/java";
@@ -6772,6 +6805,8 @@ public class Bpmn2JsonUnmarshaller {
                     languageStr = "http://www.mvel.org/2.0";
                 } else if(properties.get("conditionexpressionlanguage").equals("java")) {
                     languageStr = "http://www.java.com/java";
+                } else if(properties.get("conditionexpressionlanguage").equals("javascript")) {
+                    languageStr = "http://www.javascript.com/javascript";
                 } else {
                     // default to mvel
                     languageStr = "http://www.mvel.org/2.0";
