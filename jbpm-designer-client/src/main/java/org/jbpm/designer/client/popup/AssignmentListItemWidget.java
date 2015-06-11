@@ -128,7 +128,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     private void initEditableListBox(final ValueListBox<String> listBox, final TextBox textBox, final boolean bQuoteStringValues,
             final String customPrompt, final String placeholder, final String editPrompt) {
-        textBox.setVisible(true);
+        textBox.setVisible(false);
         textBox.setPlaceholder(placeholder);
         listBox.addValueChangeHandler(new ValueChangeHandler<String>() {
             @Override public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
@@ -137,15 +137,15 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                 if (customPrompt.equals(newValue)) {
                     setModelValue(listBox, "");
                     setModelValue(textBox, "");
-                    //listBox.setVisible(false);
-                    //textBox.setVisible(true);
+                    listBox.setVisible(false);
+                    textBox.setVisible(true);
                     textBox.setFocus(true);
                 } else if (newValue.startsWith(editPrompt)) {
                     setModelValue(listBox, "");
                     String quotedValue = newValue.substring(editPrompt.length(), newValue.length() - 3);
                     setModelValue(textBox, AssignmentData.createUnquotedConstant(quotedValue));
-                    //listBox.setVisible(false);
-                    //textBox.setVisible(true);
+                    listBox.setVisible(false);
+                    textBox.setVisible(true);
                     textBox.setFocus(true);
                 }
                 else if (getListBoxValues(listBox).isCustomValue(newValue)) {
@@ -177,8 +177,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                     setModelValue(textBox, value);
                     setModelValue(listBox, value);
                 }
-                //textBox.setVisible(false);
-                //listBox.setVisible(true);
+                textBox.setVisible(false);
+                listBox.setVisible(true);
             }
         });
     }

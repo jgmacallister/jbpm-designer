@@ -47,7 +47,6 @@ public class ActivityDataIOEditor extends BaseModal {
 
     public ActivityDataIOEditor() {
         super();
-        this.setWidth((double) Window.getClientWidth() * 0.6D + "px");
     }
 
     private List<String> dataTypes = new ArrayList<String>();
@@ -162,8 +161,6 @@ public class ActivityDataIOEditor extends BaseModal {
     ListBoxValues dataTypeListBoxValues = new ListBoxValues();
     ListBoxValues processVarListBoxValues = new ListBoxValues();
 
-
-
     @PostConstruct
     public void init() {
         setTitle("Data I/O Editor");
@@ -227,6 +224,15 @@ public class ActivityDataIOEditor extends BaseModal {
 
     @Override
     public void onShow(Event e) {
+        double width = (double) Window.getClientWidth() * 0.6D;
+        this.setWidth(width + "px");
+        double widgetWidth = width - 25;
+        if (inputAssignmentsWidget.isVisible()) {
+            inputAssignmentsWidget.setWidth(widgetWidth + "px");
+        }
+        if (outputAssignmentsWidget.isVisible()) {
+            outputAssignmentsWidget.setWidth(widgetWidth + "px");
+        }
     }
 
     @Override
