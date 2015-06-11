@@ -142,7 +142,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                     textBox.setFocus(true);
                 } else if (newValue.startsWith(editPrompt)) {
                     setModelValue(listBox, "");
-                    setModelValue(textBox, newValue.substring(editPrompt.length(), newValue.length() - 3));
+                    String quotedValue = newValue.substring(editPrompt.length(), newValue.length() - 3);
+                    setModelValue(textBox, AssignmentData.createUnquotedConstant(quotedValue));
                     //listBox.setVisible(false);
                     //textBox.setVisible(true);
                     textBox.setFocus(true);
