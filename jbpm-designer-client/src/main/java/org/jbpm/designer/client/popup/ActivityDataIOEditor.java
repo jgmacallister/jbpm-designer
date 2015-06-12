@@ -10,10 +10,13 @@ import javax.inject.Inject;
 
 import com.github.gwtbootstrap.client.ui.Button;
 import com.github.gwtbootstrap.client.ui.ValueListBox;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.UIObject;
 import org.jboss.errai.marshalling.client.Marshalling;
 import org.jbpm.designer.client.shared.AssignmentData;
 import org.jbpm.designer.client.shared.AssignmentRow;
@@ -226,6 +229,8 @@ public class ActivityDataIOEditor extends BaseModal {
     public void onShow(Event e) {
         double width = (double) Window.getClientWidth() * 0.6D;
         this.setWidth(width + "px");
+        double maxHeight = (double) Window.getClientHeight() * 0.6D;
+        this.setMaxHeigth(maxHeight + "px");
         double widgetWidth = width - 25;
         if (inputAssignmentsWidget.isVisible()) {
             inputAssignmentsWidget.setWidth(widgetWidth + "px");
@@ -234,6 +239,7 @@ public class ActivityDataIOEditor extends BaseModal {
             outputAssignmentsWidget.setWidth(widgetWidth + "px");
         }
     }
+
 
     @Override
     public void onHide(Event e) {
