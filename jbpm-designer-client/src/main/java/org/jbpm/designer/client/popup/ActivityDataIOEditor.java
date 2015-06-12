@@ -124,12 +124,7 @@ public class ActivityDataIOEditor extends BaseModal {
             if (!observers.containsKey(listBox)) {
                 observers.put(listBox, displayCustomValues);
             }
-            if (hasChanged) {
-                updateAll();
-            }
-            else {
-                update(listBox);
-            }
+            update(listBox);
         }
 
         void unregister(ValueListBox<String> listBox) {
@@ -145,7 +140,7 @@ public class ActivityDataIOEditor extends BaseModal {
             customValues.clear();
         }
 
-        void addValue(String newValue, String newValuePrompt, String customValue) {
+        void addValue(ValueListBox<String> listBox, String newValue, String newValuePrompt, String customValue) {
             if (newValuePrompt != null && !acceptableValuesWithCustomValues.contains(newValuePrompt)) {
                 acceptableValuesWithCustomValues.add(0, newValuePrompt);
             }
@@ -155,7 +150,7 @@ public class ActivityDataIOEditor extends BaseModal {
             if (customValue != null && !customValues.contains(customValue)) {
                 customValues.add(customValue);
             }
-            updateAll();
+            update(listBox);
         }
 
         boolean isCustomValue(String value) {
@@ -174,12 +169,6 @@ public class ActivityDataIOEditor extends BaseModal {
             }
             else {
                 observer.setAcceptableValues(acceptableValuesWithoutCustomValues);
-            }
-        }
-
-        void updateAll() {
-            for (ValueListBox<String>  observer : observers.keySet()) {
-                update(observer);
             }
         }
 

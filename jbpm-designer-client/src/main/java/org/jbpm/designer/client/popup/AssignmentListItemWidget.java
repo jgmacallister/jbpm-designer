@@ -30,8 +30,11 @@ import com.github.gwtbootstrap.client.ui.constants.IconType;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.text.shared.Renderer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -159,21 +162,25 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                     listBox.setVisible(false);
                     textBox.setVisible(true);
                     textBox.setFocus(true);
-                }
-                else if (getListBoxValues(listBox).isCustomValue(newValue)) {
+                } else if (getListBoxValues(listBox).isCustomValue(newValue)) {
                     String textValue = newValue;
                     if (bQuoteStringValues) {
                         textValue = AssignmentData.createUnquotedConstant(newValue);
                     }
                     setModelValue(listBox, newValue);
                     setModelValue(textBox, textValue);
-                }
-                else if (newValue != null) {
+                } else if (newValue != null) {
                     setModelValue(listBox, newValue);
                     setModelValue(textBox, "");
                 }
             }
         });
+
+        listBox.addDomHandler(new FocusHandler() {
+            @Override public void onFocus(FocusEvent focusEvent) {
+                getListBoxValues(listBox).update(listBox);
+            }
+        }, FocusEvent.getType());
 
         textBox.addBlurHandler(new BlurHandler() {
             @Override public void onBlur(BlurEvent blurEvent) {
@@ -211,7 +218,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             value = AssignmentData.createQuotedConstant(value);
         }
         String promptWithValue = editPrompt + value + "...";
-        getListBoxValues(listBox).addValue(value, promptWithValue, value);
+        getListBoxValues(listBox).addValue(listBox, value, promptWithValue, value);
 
     }
 
