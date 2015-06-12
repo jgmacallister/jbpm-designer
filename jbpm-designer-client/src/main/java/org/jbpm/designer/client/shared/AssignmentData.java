@@ -77,6 +77,10 @@ public class AssignmentData {
 
 
     protected void convertAssignmentRow(AssignmentRow assignmentRow) {
+        if (assignmentRow.getName() == null || assignmentRow.getName().isEmpty()) {
+            return;
+        }
+
         if (assignmentRow.getVariableType() == VariableType.INPUT) {
             Variable var = new Variable(assignmentRow.getName(), assignmentRow.getVariableType(),
                     getDataTypeFromDisplayName(assignmentRow.getDataType()), assignmentRow.getCustomDataType());
@@ -93,6 +97,7 @@ public class AssignmentData {
         String constant = assignmentRow.getConstant();
         if (constant != null && !constant.isEmpty()) {
             processVarName = null;
+            constant = AssignmentData.createUnquotedConstant(constant);
         }
         else {
             processVarName = assignmentRow.getProcessVar();
@@ -102,7 +107,11 @@ public class AssignmentData {
                 processVariables.add(processVar);
             }
         }
-        constant = AssignmentData.createUnquotedConstant(constant);
+        if ((constant == null || constant.isEmpty()) && (processVarName == null || processVarName.isEmpty()))
+        {
+            return;
+        }
+
         Assignment assignment = new Assignment(this, assignmentRow.getName(), assignmentRow.getVariableType(),
                 processVarName, constant);
         assignments.add(assignment);
