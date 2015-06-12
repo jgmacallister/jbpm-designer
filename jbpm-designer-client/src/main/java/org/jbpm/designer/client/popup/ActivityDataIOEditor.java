@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 JBoss Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jbpm.designer.client.popup;
 
 import java.util.ArrayList;
@@ -10,13 +26,10 @@ import javax.inject.Inject;
 
 import com.github.gwtbootstrap.client.ui.Button;
 import com.github.gwtbootstrap.client.ui.ValueListBox;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.UIObject;
 import org.jboss.errai.marshalling.client.Marshalling;
 import org.jbpm.designer.client.shared.AssignmentData;
 import org.jbpm.designer.client.shared.AssignmentRow;
@@ -27,7 +40,7 @@ import org.uberfire.ext.widgets.common.client.common.popups.BaseModal;
 public class ActivityDataIOEditor extends BaseModal {
 
     public interface GetDataCallback {
-        public void getData(String assignmentData);
+        void getData(String assignmentData);
     }
 
     GetDataCallback callback = null;
@@ -69,11 +82,13 @@ public class ActivityDataIOEditor extends BaseModal {
 
         void register(ValueListBox<String> listBox, List<String> acceptableValues, List<String> customValues,
                 boolean displayCustomValues) {
+            boolean hasChanged = false;
             if (acceptableValues != null) {
                 for (int i = 0; i < acceptableValues.size(); i++) {
                     String value = acceptableValues.get(i);
                     if (! acceptableValuesWithCustomValues.contains(value)) {
                         acceptableValuesWithCustomValues.add(value);
+                        hasChanged = true;
                     }
                     else {
                         // all new entries to be added are at the start
@@ -85,6 +100,7 @@ public class ActivityDataIOEditor extends BaseModal {
                     if (! acceptableValuesWithoutCustomValues.contains(value)
                             && ! value.endsWith("...")) {
                         acceptableValuesWithoutCustomValues.add(value);
+                        hasChanged = true;
                     }
                     else {
                         // all new entries to be added are at the start
@@ -97,6 +113,7 @@ public class ActivityDataIOEditor extends BaseModal {
                     String value = customValues.get(i);
                     if (! this.customValues.contains(value)) {
                         this.customValues.add(i, value);
+                        hasChanged = true;
                     }
                     else {
                         // all new entries to be added are at the start
@@ -107,19 +124,27 @@ public class ActivityDataIOEditor extends BaseModal {
             if (!observers.containsKey(listBox)) {
                 observers.put(listBox, displayCustomValues);
             }
-            update();
+            if (hasChanged) {
+                updateAll();
+            }
+            else {
+                update(listBox);
+            }
         }
+
         void unregister(ValueListBox<String> listBox) {
             observers.remove(listBox);
             if (observers.isEmpty()) {
                 clearValueLists();
             }
         }
+
         void clearValueLists() {
             acceptableValuesWithCustomValues.clear();
             acceptableValuesWithoutCustomValues.clear();
             customValues.clear();
         }
+
         void addValue(String newValue, String newValuePrompt, String customValue) {
             if (newValuePrompt != null && !acceptableValuesWithCustomValues.contains(newValuePrompt)) {
                 acceptableValuesWithCustomValues.add(0, newValuePrompt);
@@ -130,8 +155,9 @@ public class ActivityDataIOEditor extends BaseModal {
             if (customValue != null && !customValues.contains(customValue)) {
                 customValues.add(customValue);
             }
-            update();
+            updateAll();
         }
+
         boolean isCustomValue(String value) {
             if (value == null || value.isEmpty()) {
                 return false;
@@ -140,17 +166,23 @@ public class ActivityDataIOEditor extends BaseModal {
                 return customValues.contains(value);
             }
         }
-        void update() {
-            for (ValueListBox<String>  observer : observers.keySet()) {
-                boolean showCustomValues = observers.get(observer);
-                if (showCustomValues) {
-                    observer.setAcceptableValues(acceptableValuesWithCustomValues);
-                }
-                else {
-                    observer.setAcceptableValues(acceptableValuesWithoutCustomValues);
-                }
+
+        void update(ValueListBox<String> observer) {
+            boolean showCustomValues = observers.get(observer);
+            if (showCustomValues) {
+                observer.setAcceptableValues(acceptableValuesWithCustomValues);
+            }
+            else {
+                observer.setAcceptableValues(acceptableValuesWithoutCustomValues);
             }
         }
+
+        void updateAll() {
+            for (ValueListBox<String>  observer : observers.keySet()) {
+                update(observer);
+            }
+        }
+
         boolean containsListBox(ValueListBox<String> listBox) {
             if (listBox == null) {
                 return false;
@@ -273,9 +305,4 @@ public class ActivityDataIOEditor extends BaseModal {
 
         outputAssignmentsWidget.setProcessVariables(processVariables, processVarListBoxValues);
     }
-
-    //   public void hide() {
- //       Window.alert(activityDataIOEditorWidget.getAssignmentsAsString());
- //       super.hide();
- //   }
 }
