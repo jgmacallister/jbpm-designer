@@ -78,17 +78,13 @@ public class ActivityDataIOEditor extends BaseModal {
         List<String> acceptableValuesWithoutCustomValues = new ArrayList<String>();
         List<String> customValues = new ArrayList<String>();
 
-        Map<ValueListBox<String>, Boolean> observers = new HashMap<ValueListBox<String>, Boolean>();
-
-        void register(ValueListBox<String> listBox, List<String> acceptableValues, List<String> customValues,
-                boolean displayCustomValues) {
-            boolean hasChanged = false;
+        void register(ValueListBox<String> listBox, List<String> acceptableValues,
+                boolean showCustomValues) {
             if (acceptableValues != null) {
                 for (int i = 0; i < acceptableValues.size(); i++) {
                     String value = acceptableValues.get(i);
                     if (! acceptableValuesWithCustomValues.contains(value)) {
                         acceptableValuesWithCustomValues.add(value);
-                        hasChanged = true;
                     }
                     else {
                         // all new entries to be added are at the start
@@ -100,7 +96,6 @@ public class ActivityDataIOEditor extends BaseModal {
                     if (! acceptableValuesWithoutCustomValues.contains(value)
                             && ! value.endsWith("...")) {
                         acceptableValuesWithoutCustomValues.add(value);
-                        hasChanged = true;
                     }
                     else {
                         // all new entries to be added are at the start
@@ -108,39 +103,11 @@ public class ActivityDataIOEditor extends BaseModal {
                     }
                 }
             }
-            if (customValues != null) {
-                for (int i = 0; i < customValues.size(); i++) {
-                    String value = customValues.get(i);
-                    if (! this.customValues.contains(value)) {
-                        this.customValues.add(i, value);
-                        hasChanged = true;
-                    }
-                    else {
-                        // all new entries to be added are at the start
-                        break;
-                    }
-                }
-            }
-            if (!observers.containsKey(listBox)) {
-                observers.put(listBox, displayCustomValues);
-            }
-            update(listBox);
+            update(listBox, showCustomValues);
         }
 
-        void unregister(ValueListBox<String> listBox) {
-            observers.remove(listBox);
-            if (observers.isEmpty()) {
-                clearValueLists();
-            }
-        }
-
-        void clearValueLists() {
-            acceptableValuesWithCustomValues.clear();
-            acceptableValuesWithoutCustomValues.clear();
-            customValues.clear();
-        }
-
-        void addValue(ValueListBox<String> listBox, String newValue, String newValuePrompt, String customValue) {
+        void addValue(ValueListBox<String> listBox, String newValue, String newValuePrompt, String customValue,
+                boolean showCustomValues) {
             if (newValuePrompt != null && !acceptableValuesWithCustomValues.contains(newValuePrompt)) {
                 acceptableValuesWithCustomValues.add(0, newValuePrompt);
             }
@@ -150,7 +117,7 @@ public class ActivityDataIOEditor extends BaseModal {
             if (customValue != null && !customValues.contains(customValue)) {
                 customValues.add(customValue);
             }
-            update(listBox);
+            update(listBox, showCustomValues);
         }
 
         boolean isCustomValue(String value) {
@@ -162,22 +129,12 @@ public class ActivityDataIOEditor extends BaseModal {
             }
         }
 
-        void update(ValueListBox<String> observer) {
-            boolean showCustomValues = observers.get(observer);
+        void update(ValueListBox<String> observer, boolean showCustomValues) {
             if (showCustomValues) {
                 observer.setAcceptableValues(acceptableValuesWithCustomValues);
             }
             else {
                 observer.setAcceptableValues(acceptableValuesWithoutCustomValues);
-            }
-        }
-
-        boolean containsListBox(ValueListBox<String> listBox) {
-            if (listBox == null) {
-                return false;
-            }
-            else {
-                return observers.containsKey(listBox);
             }
         }
     }

@@ -18,6 +18,8 @@ package org.jbpm.designer.client.popup;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -115,8 +117,9 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         }
     });
 
-    ListBoxValues dataTypeListBoxValues;
-    ListBoxValues processVarListBoxValues;
+
+    Map<ValueListBox<String>, ListBoxValues> mapListBoxToValues = new HashMap<ValueListBox<String>, ListBoxValues>();
+    Map<ValueListBox<String>, Boolean> mapListBoxToShowCustomValues = new HashMap<ValueListBox<String>, Boolean>();
 
     public static final String EDIT_PROMPT = "Edit ";
     public static final String CUSTOM_PROMPT = "Custom ...";
@@ -178,7 +181,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
         listBox.addDomHandler(new FocusHandler() {
             @Override public void onFocus(FocusEvent focusEvent) {
-                getListBoxValues(listBox).update(listBox);
+                boolean showCustomValues = mapListBoxToShowCustomValues.get(listBox);
+                getListBoxValues(listBox).update(listBox, showCustomValues);
             }
         }, FocusEvent.getType());
 
@@ -203,13 +207,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     }
 
     protected ListBoxValues getListBoxValues(final ValueListBox<String> listBox) {
-        if (dataTypeListBoxValues.containsListBox(listBox)) {
-            return dataTypeListBoxValues;
-        }
-        else if (processVarListBoxValues.containsListBox(listBox)) {
-            return processVarListBoxValues;
-        }
-        return null;
+        return mapListBoxToValues.get(listBox);
     }
 
     protected void addValueToListBoxValues(final ValueListBox<String> listBox, String value, String editPrompt,
@@ -218,8 +216,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
             value = AssignmentData.createQuotedConstant(value);
         }
         String promptWithValue = editPrompt + value + "...";
-        getListBoxValues(listBox).addValue(listBox, value, promptWithValue, value);
-
+        boolean showCustomValues = mapListBoxToShowCustomValues.get(listBox);
+        getListBoxValues(listBox).addValue(listBox, value, promptWithValue, value, showCustomValues);
     }
 
     protected void setModelValue(final TextBox textBox, String value) {
@@ -253,8 +251,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
     @PreDestroy
     private void cleanUp() {
-        dataTypeListBoxValues.unregister(dataType);
-        processVarListBoxValues.unregister(processVar);
+
     }
 
     @Override
@@ -265,13 +262,13 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     @Override
     public void setModel(AssignmentRow model) {
         assignment.setModel(model);
-
         initAssignmentControls();
     }
 
     public void setDataTypes(List<String> dataTypes, ListBoxValues listBoxValues) {
-        this.dataTypeListBoxValues = listBoxValues;
-        dataTypeListBoxValues.register(dataType, dataTypes, null, true);
+        mapListBoxToValues.put(dataType, listBoxValues);
+        mapListBoxToShowCustomValues.put(dataType, true);
+        listBoxValues.register(dataType, dataTypes, true);
         String cdt = assignment.getModel().getCustomDataType();
         if (cdt != null && !cdt.isEmpty()) {
             addValueToListBoxValues(dataType, cdt, EDIT_PROMPT, false);
@@ -279,12 +276,13 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     }
 
     public void setProcessVariables(List<String> processVariables, ListBoxValues listBoxValues) {
-        this.processVarListBoxValues = listBoxValues;
+        mapListBoxToValues.put(processVar, listBoxValues);
         boolean showCustomValues = false;
         if (assignment.getModel().getVariableType() == VariableType.INPUT) {
             showCustomValues = true;
         }
-        processVarListBoxValues.register(processVar, processVariables, null, showCustomValues);
+        mapListBoxToShowCustomValues.put(processVar, showCustomValues);
+        listBoxValues.register(processVar, processVariables, showCustomValues);
         String con = assignment.getModel().getConstant();
         if (con != null && !con.isEmpty()) {
             addValueToListBoxValues(processVar, con, EDIT_PROMPT, true);
