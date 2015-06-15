@@ -49,7 +49,6 @@ public class AssignmentDataMarshaller
                 "\"" + "processVariables" + "\":\"" + o.getProcessVariablesString() + "\"," +
                 "\"" + "assignments" + "\":\"" + o.getAssignmentsString() + "\"," +
                 "\"" + "dataTypes" + "\":\"" + o.getDataTypesString() + "\"}";
-//                o.toString() + "\"}";
     }
 
     @Override public AssignmentData[] getEmptyArray() {

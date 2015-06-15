@@ -24,6 +24,12 @@ import java.util.Map;
 import org.jboss.errai.common.client.api.annotations.Portable;
 import org.jbpm.designer.client.shared.Variable.VariableType;
 
+/**
+ *
+ * Class which contains everything associated with Assignments which
+ * is passed between the Designer properties and the DataIOEditor, i.e.
+ * Assignments, InputVariables, OutputVariables, DataTypes and ProcessVariables
+ */
 @Portable
 public class AssignmentData {
 

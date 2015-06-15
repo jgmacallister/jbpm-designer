@@ -131,7 +131,6 @@ public class ActivityDataIOEditorWidget extends Composite {
         for (int i = 0; i < assignmentRows.size(); i++) {
             assignments.getWidget(i).setAssignments(assignments.getValue());
         }
-
     }
 
     public List<AssignmentRow> getData() {

@@ -19,6 +19,9 @@ package org.jbpm.designer.client.shared;
 import org.jboss.errai.databinding.client.api.Bindable;
 import org.jbpm.designer.client.shared.Variable.VariableType;
 
+/**
+ * Class which is bound to rows in the DataIOEditor
+ */
 @Bindable
 public class AssignmentRow {
 

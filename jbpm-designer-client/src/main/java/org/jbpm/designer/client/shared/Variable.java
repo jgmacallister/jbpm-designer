@@ -26,8 +26,6 @@ public class Variable {
         PROCESS
     }
 
-    ;
-
     private VariableType variableType;
 
     private String name;

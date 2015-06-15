@@ -16,10 +16,8 @@
 
 package org.jbpm.designer.client.shared;
 
-import org.jboss.errai.databinding.client.api.Bindable;
 import org.jbpm.designer.client.shared.Variable.VariableType;
 
-@Bindable
 public class Assignment {
 
     private Variable variable;

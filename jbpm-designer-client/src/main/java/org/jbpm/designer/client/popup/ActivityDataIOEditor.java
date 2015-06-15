@@ -17,9 +17,7 @@
 package org.jbpm.designer.client.popup;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -39,10 +37,13 @@ import org.uberfire.ext.widgets.common.client.common.popups.BaseModal;
 @Dependent
 public class ActivityDataIOEditor extends BaseModal {
 
+    /**
+     * Callback interface which should be implemented by callers to retrieve the
+     * edited Assignments data.
+     */
     public interface GetDataCallback {
         void getData(String assignmentData);
     }
-
     GetDataCallback callback = null;
 
     boolean hasInputVars = true;
@@ -69,9 +70,10 @@ public class ActivityDataIOEditor extends BaseModal {
     private List<String> dataTypeDisplayNames = new ArrayList<String>();
 
     /**
-     * Class for making sure the ListBoxes in the dialog are updated with new
-     * dataTypes / Constants as the user adds them.
-     *
+     * Class containing a list of values for a ValueListBox<String>.
+     * This is used by the ListBoxes in the dialog to keep their drop-down lists
+     * up to date with updated with new values (CustomDataTypes / Constants) as
+     * the user adds them.
      */
     class ListBoxValues {
         List<String> acceptableValuesWithCustomValues = new ArrayList<String>();
@@ -156,8 +158,6 @@ public class ActivityDataIOEditor extends BaseModal {
         btnOK.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(final ClickEvent event) {
-                //Window.alert(inputAssignmentsWidget.getAssignmentsAsString());
-                //Window.alert(outputAssignmentsWidget.getAssignmentsAsString());
                 if (callback != null) {
                     AssignmentData data = new AssignmentData(inputAssignmentsWidget.getData(),
                             outputAssignmentsWidget.getData(), dataTypes, dataTypeDisplayNames);
@@ -177,7 +177,6 @@ public class ActivityDataIOEditor extends BaseModal {
             }
         });
         this.add(btnCancel);
-
     }
 
     public void configureWidgets(boolean hasInputVars, boolean isSingleInputVar, boolean hasOutputVars, boolean isSingleOutputVar) {

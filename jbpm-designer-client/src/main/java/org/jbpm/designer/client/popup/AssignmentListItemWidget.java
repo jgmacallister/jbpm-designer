@@ -17,9 +17,9 @@
 package org.jbpm.designer.client.popup;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -36,7 +36,6 @@ import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.text.shared.Renderer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -56,6 +55,10 @@ import org.jbpm.designer.client.shared.Variable.VariableType;
 /**
  * A templated widget that will be used to display a row in a table of
  * {@link AssignmentRow}s.
+ *
+ * The Name field of AssignmentRow is Bound, but other fields are not bound because
+ * they use a combination of ListBox and TextBox to implement a drop-down combo
+ * to hold the values.
  */
 @Templated("ActivityDataIOEditorWidget.html#assignment")
 public class AssignmentListItemWidget extends Composite implements HasModel<AssignmentRow> {
@@ -71,15 +74,12 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     @AutoBound
     private DataBinder<AssignmentRow> assignment;
 
-    // You can also choose to instantiate your own widgets. Injection is not
-    // required. In case of Element, direct injection is not supported.
     @Inject
     @Bound
     @DataField
     private TextBox name;
 
     @DataField
-    //private final Element dataType = DOM.createTD();
     private ValueListBox<String> dataType = new ValueListBox<String>(new Renderer<String>() {
         public String render(String object) {
             String s = "";
@@ -102,7 +102,6 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     private final Element direction = DOM.createTD();
 
     @DataField
-    //private final Element processVar = DOM.createTD();
     private ValueListBox<String> processVar = new ValueListBox<String>(new Renderer<String>() {
         public String render(String object) {
             String s = "";
@@ -136,7 +135,8 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
     private Button deleteButton;
 
     /**
-     * List of Assignments the current assignment is in
+     * List of Assignments the current assignment is in.
+     * Required for implementation of Delete button.
      */
     private List<AssignmentRow> assignments;
 
@@ -144,6 +144,18 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         this.assignments = assignments;
     }
 
+    /**
+     * Initializes an 'EditableListBox' control, which is a combination of
+     * a ValueListBox<String> and a TextBox used to set values via a drop-down
+     * and also allow new custom values to be added and edited.
+     *
+     * @param listBox
+     * @param textBox
+     * @param bQuoteStringValues
+     * @param customPrompt
+     * @param placeholder
+     * @param editPrompt
+     */
     private void initEditableListBox(final ValueListBox<String> listBox, final TextBox textBox, final boolean bQuoteStringValues,
             final String customPrompt, final String placeholder, final String editPrompt) {
         textBox.setVisible(false);
@@ -151,14 +163,15 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         listBox.addValueChangeHandler(new ValueChangeHandler<String>() {
             @Override public void onValueChange(ValueChangeEvent<String> valueChangeEvent) {
                 String newValue = valueChangeEvent.getValue();
-                // If "Custom..." selected, show textBox
                 if (customPrompt.equals(newValue)) {
+                    // "Custom..." selected, show textBox with empty value
                     setModelValue(listBox, "");
                     setModelValue(textBox, "");
                     listBox.setVisible(false);
                     textBox.setVisible(true);
                     textBox.setFocus(true);
                 } else if (newValue.startsWith(editPrompt)) {
+                    // "Edit..." selected, show textBox with appropriate value
                     setModelValue(listBox, "");
                     String quotedValue = newValue.substring(editPrompt.length(), newValue.length() - 3);
                     setModelValue(textBox, AssignmentData.createUnquotedConstant(quotedValue));
@@ -166,6 +179,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                     textBox.setVisible(true);
                     textBox.setFocus(true);
                 } else if (getListBoxValues(listBox).isCustomValue(newValue)) {
+                    // A Custom value has been selected
                     String textValue = newValue;
                     if (bQuoteStringValues) {
                         textValue = AssignmentData.createUnquotedConstant(newValue);
@@ -173,6 +187,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
                     setModelValue(listBox, newValue);
                     setModelValue(textBox, textValue);
                 } else if (newValue != null) {
+                    // A non-custom value has been selected
                     setModelValue(listBox, newValue);
                     setModelValue(textBox, "");
                 }
@@ -181,6 +196,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
         listBox.addDomHandler(new FocusHandler() {
             @Override public void onFocus(FocusEvent focusEvent) {
+                // Update drop-down list values on listBox FocusEvent
                 boolean showCustomValues = mapListBoxToShowCustomValues.get(listBox);
                 getListBoxValues(listBox).update(listBox, showCustomValues);
             }
@@ -188,6 +204,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
 
         textBox.addBlurHandler(new BlurHandler() {
             @Override public void onBlur(BlurEvent blurEvent) {
+                // Update ListBoxValues and set model values when textBox loses focus
                 String value = textBox.getValue();
                 if (value != null) {
                     if (!value.isEmpty()) {
@@ -245,7 +262,7 @@ public class AssignmentListItemWidget extends Composite implements HasModel<Assi
         // Configure dataType and customDataType controls
         initEditableListBox(dataType, customDataType, false, CUSTOM_PROMPT, ENTER_TYPE_PROMPT, EDIT_PROMPT);
 
-        // Configure dataType and customDataType controls
+        // Configure processVar and constant controls
         initEditableListBox(processVar, constant, true, CONSTANT_PROMPT, ENTER_CONSTANT_PROMPT, EDIT_PROMPT);
     }
 
