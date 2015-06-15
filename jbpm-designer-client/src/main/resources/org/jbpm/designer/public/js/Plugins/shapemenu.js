@@ -59,7 +59,8 @@ ORYX.Plugins.ShapeMenuPlugin = {
 		this.facade.registerOnEvent(ORYX.CONFIG.VOICE_COMMAND_ADD_TASK, this.addNode.bind(this, "Task"));
 		this.facade.registerOnEvent(ORYX.CONFIG.VOICE_COMMAND_ADD_GATEWAY, this.addNode.bind(this, "Exclusive_Databased_Gateway"));
 		this.facade.registerOnEvent(ORYX.CONFIG.VOICE_COMMAND_ADD_END_EVENT, this.addNode.bind(this, "EndNoneEvent"));
-		
+
+		this.facade.registerOnEvent(ORYX.CONFIG.EVENT_DATAIOEDITOR_SHOW,  this.showDataIOEditor.bind(this));
 
 		this.timer = null;
 		
