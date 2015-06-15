@@ -226,12 +226,11 @@ public class DesignerPresenter
         } ).get(URIUtil.encode(uri));
     }
 
-    AssignmentData _assignmentData = new AssignmentData("inStr:String,inInt1:Integer,inCustom1:org.jdl.Custom,inStrConst:String,Skippable",
-            "outStr1:String,outInt1:Integer,outCustom1:org.jdl.Custom",
-            "str1:String,int1:Integer,custom1:org.jdl.Custom",
-//                "[din]inStrConst=TheString,[dout]outStr1->str1,[dout]outInt1->int1,[dout]outCustom1->custom1",
-            "[din]str1->inStr,[din]int1->inInt1,[din]custom1->inCustom1,[din]inStrConst=TheString,[dout]outStr1->str1,[dout]outInt1->int1,[dout]outCustom1->custom1",
-            "String:String, Integer:Integer, Boolean:Boolean, Float:Float, Object:Object");
+//    AssignmentData _assignmentData = new AssignmentData("inStr:String,inInt1:Integer,inCustom1:org.jdl.Custom,inStrConst:String,Skippable",
+//            "outStr1:String,outInt1:Integer,outCustom1:org.jdl.Custom",
+//            "str1:String,int1:Integer,custom1:org.jdl.Custom",
+//            "[din]str1->inStr,[din]int1->inInt1,[din]custom1->inCustom1,[din]inStrConst=TheString,[dout]outStr1->str1,[dout]outInt1->int1,[dout]outCustom1->custom1",
+//            "String:String, Integer:Integer, Boolean:Boolean, Float:Float, Object:Object");
 
     public void showDataIOEditor(final String datainput, final String datainputset, final String dataoutput,
             final String dataoutputset, final String processvars, final String assignments, final String datatypes, final JavaScriptObject jscallback) {

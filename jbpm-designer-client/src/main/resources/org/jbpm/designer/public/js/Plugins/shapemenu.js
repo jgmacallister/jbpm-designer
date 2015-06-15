@@ -465,9 +465,9 @@ ORYX.Plugins.ShapeMenuPlugin = {
 			}
 		}
 
-		var dummyTypes = ""; //"UserCommand [org.dummy.examples.cmd]:org.dummy.examples.cmd.UserCommand,User [org.dummy.examples.data]:org.dummy.examples.data.User,";
+		var testTypes = ""; //"UserCommand [org.dummy.examples.cmd]:org.dummy.examples.cmd.UserCommand,User [org.dummy.examples.data]:org.dummy.examples.data.User,";
 
-		var datatypes = "Custom ...:Custom ..., String:String, Integer:Integer, Boolean:Boolean, Float:Float, Object:Object, ******:******," + dummyTypes + javaDataTypes;
+		var datatypes = "Custom ...:Custom ..., String:String, Integer:Integer, Boolean:Boolean, Float:Float, Object:Object, ******:******," + testTypes + javaDataTypes;
 
 		var element = this.currentShapes[0];
 		var stencil = element.getStencil();
@@ -505,7 +505,7 @@ ORYX.Plugins.ShapeMenuPlugin = {
 
 		parent.designersignalshowdataioeditor(datainput, datainputset, dataoutput, dataoutputset, processvars, assignments, datatypes,
 				function(data) {
-					//					window.alert("passed back to shapemenu: " + data);
+					//window.alert("passed back to shapemenu: " + data);
 					var obj = JSON.parse(data);
 
 					var element = this.currentShapes[0];
